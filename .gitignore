@@ -1,5 +1,12 @@
+# Python / venv
 venv/
 __pycache__/
-metrics/
-model/resnet50.onnx
 *.pyc
+
+# Generated data and models
+metrics/
+model/
+
+# Temporary files or exports
+*.log
+*.csv
