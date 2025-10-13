@@ -1,6 +1,5 @@
-cat > requirements.txt <<'EOF'
-numpy==2.1.3
-grpcio==1.67.1
-onnx==1.16.2
+numpy>=1.26
+psutil>=5.9
 onnxruntime==1.23.1
-EOF
+grpcio>=1.67,<1.68
+tritonclient[grpc]==2.61.0

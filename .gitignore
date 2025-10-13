@@ -1,6 +1,5 @@
-cat > .gitignore <<'EOF'
 venv/
 __pycache__/
-*.csv
-model/*.onnx
-EOF
+metrics/
+model/resnet50.onnx
+*.pyc
