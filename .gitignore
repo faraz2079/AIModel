@@ -1,12 +1,10 @@
-# Python / venv
 venv/
+.venv/
 __pycache__/
 *.pyc
 
-# Generated data and models
 metrics/
 model/
 
-# Temporary files or exports
 *.log
 *.csv
