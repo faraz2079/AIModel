@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ort-server
+spec:
+  selector:
+    app: ort-server
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+    - name: grpc
+      port: 8001
+      targetPort: 8001
+
+# kubectl -n aimodel port-forward svc/ort-server 8000:8000 8001:8001 - this command can be ran to portforward the service
