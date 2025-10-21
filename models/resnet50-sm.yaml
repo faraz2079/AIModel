@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: resnet50-sm
+  namespace: monitoring
+spec:
+  namespaceSelector:
+    matchNames: ["aimodel"]
+  selector:
+    matchLabels:
+      app: resnet50
+  endpoints:
+    - port: rest            # matches the Service port name
+      interval: 15s
+      path: /monitoring/prometheus/metrics
