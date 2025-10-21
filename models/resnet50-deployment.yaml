@@ -8,7 +8,7 @@ metadata:
 spec:
   replicas: 1
   strategy:
-    type: Recreate                # <<< only 1 pod during updates (downtime while restarting)
+    type: Recreate                  # ensures only 1 pod during an update
   selector:
     matchLabels: { app: resnet50 }
   template:
@@ -22,24 +22,19 @@ spec:
           effect: "NoSchedule"
       containers:
         - name: tfserving
-          image: tensorflow/serving:2.14.0
+          image: docker.io/faraz2079/resnet50-serving:2   # bump tag
           imagePullPolicy: IfNotPresent
           args:
             - --port=8500
             - --rest_api_port=8501
             - --model_name=resnet50
             - --model_base_path=/models/resnet50
-            - --monitoring_config_file=/config/monitoring_config.pbtxt   # <<< pbtxt, not JSON
+            - --monitoring_config_file=/config/monitoring_config.pbtxt
           ports:
-            - containerPort: 8500
-            - containerPort: 8501
-          volumeMounts:
-            - name: model-volume
-              mountPath: /models/resnet50
-              readOnly: true
-            - name: monitoring-config
-              mountPath: /config
-              readOnly: true
+            - name: grpc
+              containerPort: 8500
+            - name: rest
+              containerPort: 8501
           readinessProbe:
             httpGet:
               path: /v1/models/resnet50
@@ -47,11 +42,11 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 5
             failureThreshold: 12
+          volumeMounts:
+            - name: monitoring-config
+              mountPath: /config
+              readOnly: true
       volumes:
-        - name: model-volume
-          hostPath:
-            path: /home/emulate/models/resnet50
-            type: Directory
         - name: monitoring-config
           configMap:
             name: resnet50-monitoring
