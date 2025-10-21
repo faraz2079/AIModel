@@ -5,3 +5,5 @@ models/resnet50/
 venvs/
 __pycache__/
 *.pyc
+
+runs/
