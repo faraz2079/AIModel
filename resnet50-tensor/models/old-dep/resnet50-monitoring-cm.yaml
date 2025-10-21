@@ -1,0 +1,15 @@
+# resnet50-monitoring-cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: resnet50-monitoring
+  namespace: aimodel
+data:
+  monitoring_config.json: |
+    {
+      "prometheus_config": {
+        "enable": true,
+        "path": "/monitoring/prometheus/metrics",
+        "namespace": "tfserving"
+      }
+    }
