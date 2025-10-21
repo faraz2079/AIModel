@@ -1,0 +1,149 @@
+# -------------------------
+# Namespace for the model
+# -------------------------
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aimodel
+---
+# -------------------------
+# TF Serving monitoring config (enables /monitoring/prometheus/metrics)
+# -------------------------
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: resnet50-monitoring
+  namespace: aimodel
+data:
+  monitoring_config.pbtxt: |
+    prometheus_config {
+      enable: true
+      path: "/monitoring/prometheus/metrics"
+    }
+---
+# -------------------------
+# Service (named ports used by ServiceMonitor)
+# -------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: resnet50-service
+  namespace: aimodel
+  labels: { app: resnet50 }
+spec:
+  type: ClusterIP
+  selector: { app: resnet50 }
+  ports:
+    - name: grpc
+      port: 8500
+      targetPort: 8500
+    - name: rest
+      port: 8501
+      targetPort: 8501
+---
+# -------------------------
+# Deployment (uses your Docker Hub image, Recreate = only 1 pod)
+# -------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resnet50-tfserving
+  namespace: aimodel
+  labels: { app: resnet50 }
+spec:
+  replicas: 1
+  strategy: { type: Recreate }   # ensure no second pod during updates
+  selector:
+    matchLabels: { app: resnet50 }
+  template:
+    metadata:
+      labels: { app: resnet50 }
+    spec:
+      tolerations:
+        - key: "node-role.kubernetes.io/control-plane"
+          effect: "NoSchedule"
+        - key: "node-role.kubernetes.io/master"
+          effect: "NoSchedule"
+      containers:
+        - name: tfserving
+          image: docker.io/faraz2079/resnet50-serving:2   # <— your published image
+          imagePullPolicy: IfNotPresent
+          args:
+            - --port=8500
+            - --rest_api_port=8501
+            - --model_name=resnet50
+            - --model_base_path=/models/resnet50
+            - --monitoring_config_file=/config/monitoring_config.pbtxt
+          ports:
+            - name: grpc
+              containerPort: 8500
+            - name: rest
+              containerPort: 8501
+          readinessProbe:
+            httpGet:
+              path: /v1/models/resnet50
+              port: 8501
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 12
+          volumeMounts:
+            - name: monitoring-config
+              mountPath: /config
+              readOnly: true
+      volumes:
+        - name: monitoring-config
+          configMap:
+            name: resnet50-monitoring
+            items:
+              - key: monitoring_config.pbtxt
+                path: monitoring_config.pbtxt
+---
+# -------------------------
+# RBAC so Prometheus can discover/target this Service
+# (assumes kube-prometheus and SA "prometheus-k8s" in namespace monitoring)
+# -------------------------
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: prometheus-k8s-discovery
+  namespace: aimodel
+rules:
+- apiGroups: [""]
+  resources: ["services","endpoints","pods"]
+  verbs: ["get","list","watch"]
+- apiGroups: ["discovery.k8s.io"]
+  resources: ["endpointslices"]
+  verbs: ["get","list","watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: prometheus-k8s-discovery
+  namespace: aimodel
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: prometheus-k8s-discovery
+subjects:
+- kind: ServiceAccount
+  name: prometheus-k8s
+  namespace: monitoring
+---
+# -------------------------
+# ServiceMonitor (lives in monitoring ns)
+# -------------------------
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: resnet50-sm
+  namespace: monitoring
+spec:
+  namespaceSelector:
+    matchNames: ["aimodel"]
+  selector:
+    matchLabels:
+      app: resnet50
+  endpoints:
+    - port: rest
+      interval: 15s
+      path: /monitoring/prometheus/metrics
