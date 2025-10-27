@@ -104,4 +104,4 @@ PY
 
 `./scripts/run_bench_csv.sh`
 
-`REQS=800 CONC=16 NS=aimodel SVC=resnet50-service ./scripts/run_bench_csv.sh`
+`BATCH=8 REQS=1000 CONC=16 NS=aimodel SVC=resnet50-service ./scripts/run_bench_csv.sh`
