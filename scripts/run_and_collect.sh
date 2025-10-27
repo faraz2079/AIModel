@@ -7,8 +7,9 @@ APP_LABEL="${APP_LABEL:-resnet50}"
 SVC="${SVC:-resnet50-service}"
 MODEL="${MODEL:-resnet50}"
 REST_PORT="${REST_PORT:-8501}"
-REQS="${REQS:-400}"
-CONC="${CONC:-8}"
+REQS="${REQS:-400}"          # total requests (each request sends BATCH images)
+CONC="${CONC:-8}"            # concurrency (in-flight requests)
+BATCH="${BATCH:-1}"          # <<< NEW: images per request (client-side batching)
 IMG_URL="${IMG_URL:-https://raw.githubusercontent.com/awslabs/mxnet-model-server/master/docs/images/kitten_small.jpg}"
 OUTDIR="${OUTDIR:-runs}"
 
@@ -25,7 +26,7 @@ ENERGY_CSV="${OUTDIR}/energy_${idx}_${ts}.csv"
 TF_BEFORE="${OUTDIR}/tfmetrics_${idx}_${ts}_before.prom"
 TF_AFTER="${OUTDIR}/tfmetrics_${idx}_${ts}_after.prom"
 
-echo "Run $idx @ $ts  NS=$NS  APP=$APP_LABEL  SVC=$SVC  MODEL=$MODEL  REQS=$REQS  CONC=$CONC"
+echo "Run $idx @ $ts  NS=$NS  APP=$APP_LABEL  SVC=$SVC  MODEL=$MODEL  REQS=$REQS  CONC=$CONC  BATCH=$BATCH"
 
 # ---- Locate pod + node ----
 POD="$(kubectl -n "$NS" get pod -l app="$APP_LABEL" -o jsonpath='{.items[0].metadata.name}')"
@@ -112,15 +113,14 @@ DONE_FLAG="$(mktemp)"; rm -f "$DONE_FLAG"
     if [ -n "${prev_usage:-}" ] && [ "$usage" != "NA" ]; then
       d=$((usage - prev_usage))
       [ "$d" -lt 0 ] && d=0
-      # usage in microseconds -> ms
-      delta_ms="$(awk -v x="$d" 'BEGIN{printf "%.3f", x/1000.0}')"
-      # percent of one CPU over ~1 second
-      pct="$(awk -v ms="$delta_ms" 'BEGIN{printf "%.1f", (ms/1000.0)*100.0}')"
+      delta_ms="$(awk -v x="$d" 'BEGIN{printf "%.3f", x/1000.0}')"  # usec -> ms
+      pct="$(awk -v ms="$delta_ms" 'BEGIN{printf "%.1f", (ms/1000.0)*100.0}')" # ~% of one CPU
     fi
     prev_usage="${usage:-0}"
 
     # parse PSI (some/full lines)
     some_line="$(echo "$psi" | awk '/^some / {print}')"
+    full_line="$(echo "$full_line" | cat -)" # placeholder to avoid unbound; will set properly next:
     full_line="$(echo "$psi" | awk '/^full / {print}')"
     sa10="$(echo "$some_line" | awk -F'[ =]' '{for(i=1;i<=NF;i++)if($i=="avg10")print $(i+1)}')"
     sa60="$(echo "$some_line" | awk -F'[ =]' '{for(i=1;i<=NF;i++)if($i=="avg60")print $(i+1)}')"
@@ -160,23 +160,27 @@ python3 -m venv "$VENV"
 pip -q install requests pillow numpy >/dev/null
 
 URL="http://127.0.0.1:${REST_PORT}/v1/models/${MODEL}:predict" \
-IMG="$IMG_URL" N="$REQS" CONC="$CONC" OUT_JSON="$BENCH_JSON" OUT_CSV="$LAT_CSV" \
+IMG="$IMG_URL" N="$REQS" CONC="$CONC" BATCH="$BATCH" OUT_JSON="$BENCH_JSON" OUT_CSV="$LAT_CSV" \
 python3 - <<'PY'
 import io, os, csv, json, time, datetime, requests, numpy as np
 from PIL import Image
-URL=os.environ["URL"]; IMG=os.environ["IMG"]; N=int(os.environ["N"]); CONC=int(os.environ["CONC"])
+URL=os.environ["URL"]; IMG=os.environ["IMG"]; N=int(os.environ["N"]); CONC=int(os.environ["CONC"]); BATCH=int(os.environ["BATCH"])
 OUT_JSON=os.environ["OUT_JSON"]; OUT_CSV=os.environ["OUT_CSV"]
 
 def preprocess(img):
     img = img.convert("RGB").resize((224,224))
     x = np.array(img, dtype=np.float32); x = x[..., ::-1]
     x -= np.array([103.939, 116.779, 123.68], dtype=np.float32)
-    return np.expand_dims(x, 0).tolist()
+    return x  # single image (no batch dim)
 
-payload = {"instances": preprocess(Image.open(io.BytesIO(requests.get(IMG, timeout=30).content)))}
+# Build batched payload (replicate same image BATCH times)
+img = Image.open(io.BytesIO(requests.get(IMG, timeout=30).content))
+one = preprocess(img).tolist()
+instances = [one for _ in range(BATCH)]
+payload = {"instances": instances}
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
-def one(i):
+def one_req(i):
     ts_iso = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     t0=time.perf_counter()
     r = requests.post(URL, json=payload, timeout=60)
@@ -186,7 +190,7 @@ def one(i):
 rows=[]
 t0=time.time()
 with ThreadPoolExecutor(max_workers=CONC) as ex:
-    futs=[ex.submit(one, i+1) for i in range(N)]
+    futs=[ex.submit(one_req, i+1) for i in range(N)]
     for f in as_completed(futs): rows.append(f.result())
 t1=time.time()
 
@@ -201,7 +205,10 @@ def q(p):
     k=int(round(p*(len(lat)-1))); return float(lat[k])
 
 out={
-  "requests": len(rows), "concurrency": CONC,
+  "requests": len(rows),
+  "concurrency": CONC,
+  "batch_size": BATCH,
+  "total_images": len(rows)*BATCH,
   "mean_ms": float(np.mean(lat)) if lat else None,
   "p50_ms": q(0.5), "p90_ms": q(0.9), "p95_ms": q(0.95), "p99_ms": q(0.99),
   "started_at": int(t0), "finished_at": int(t1), "elapsed_s": t1-t0, "url": URL
@@ -216,7 +223,7 @@ curl -fs "http://127.0.0.1:${REST_PORT}/monitoring/prometheus/metrics" > "$TF_AF
 
 echo
 echo "Saved CSVs:"
-echo "  $LAT_CSV      # per-request latency"
+echo "  $LAT_CSV      # per-request latency (each request carries BATCH images)"
 echo "  $CGROUP_CSV   # pod CPU & PSI (1Hz)"
 echo "  $ENERGY_CSV   # node energy/power (1Hz, if RAPL available)"
 echo "Summary:"
