@@ -1,9 +1,0 @@
-# TensorFlow SavedModel / large artifacts
-models/resnet50/
-
-# Python venvs & caches
-venvs/
-__pycache__/
-*.pyc
-
-runs/
