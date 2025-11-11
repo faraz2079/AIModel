@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: odm
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yolov8n-cpu
+  namespace: odm
+  labels:
+    app: yolov8n-cpu
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: yolov8n-cpu
+  template:
+    metadata:
+      labels:
+        app: yolov8n-cpu
+    spec:
+      containers:
+        - name: yolov8n
+          image: faraz2079/yolov8n-cpu-api:latest
+          imagePullPolicy: IfNotPresent     # ✅ important
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+              ephemeral-storage: "2Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+              ephemeral-storage: "4Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          imagePullPolicy: Always
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: yolov8n-cpu-svc
+  namespace: odm
+  labels:
+    app: yolov8n-cpu
+spec:
+  selector:
+    app: yolov8n-cpu
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+      nodePort: 30080
+  type: NodePort
