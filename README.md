@@ -16,6 +16,10 @@ print("Saved model to:", f"{__import__('os').environ['MODEL_DIR']}/1")
 PY`
 
 
+# Run the yaml file to install the app
+Go to the models directory and run: 
+` ./resnet50-stack.yaml `
+
 
 # Deploy the monitoring stack:
 
