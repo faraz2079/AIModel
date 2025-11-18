@@ -1,9 +1,13 @@
-# TensorFlow SavedModel / large artifacts
-models/resnet50/
+# Ignore TensorFlow models
+new_savedmodel/
+triton_model_repository/**/model.savedmodel/
+triton_model_repository/**/saved_model.pb
+triton_model_repository/**/variables/
+triton_model_repository/**/assets/
+models/
+*.pb
+*.tar.gz
 
-# Python venvs & caches
-venvs/
-__pycache__/
-*.pyc
-
-runs/
+# Ignore virtual environments
+venv/
+tfenv/

@@ -33,10 +33,13 @@ BENCH_JSON="${OUTDIR}/bench_${idx}_${ts}.json"
 LAT_CSV="${OUTDIR}/latency_${idx}_${ts}.csv"
 CGROUP_CSV="${OUTDIR}/cgroup_${idx}_${ts}.csv"
 ENERGY_CSV="${OUTDIR}/energy_${idx}_${ts}.csv"
+GPU_CSV="${OUTDIR}/gpu_${idx}_${ts}.csv"
 TF_BEFORE="${OUTDIR}/tfmetrics_${idx}_${ts}_before.prom"
 TF_AFTER="${OUTDIR}/tfmetrics_${idx}_${ts}_after.prom"
 
-echo "Run $idx @ $ts  NS=$NS  APP=$APP_LABEL  SVC=$SVC  MODEL=$MODEL  REQS=$REQS  CONC=$CONC  BATCH=$BATCH  PROTO=$PROTO"
+echo "Run $idx @ $ts"
+echo "  NS=$NS  APP=$APP_LABEL  SVC=$SVC  MODEL=$MODEL"
+echo "  REQS=$REQS  CONC=$CONC  BATCH=$BATCH  PROTO=$PROTO"
 
 # ---- Locate pod + node ----
 POD="$(kubectl -n "$NS" get pod -l app="$APP_LABEL" -o jsonpath='{.items[0].metadata.name}')"
@@ -65,9 +68,12 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# wait until REST is ready (works for both modes)
+# wait until REST is ready
 for i in {1..60}; do
-  curl -fs "http://127.0.0.1:${REST_PORT}/v1/models/${MODEL}" >/dev/null && break || sleep 0.2
+  if curl -fs "http://127.0.0.1:${REST_PORT}/v1/models/${MODEL}" >/dev/null 2>&1; then
+    break
+  fi
+  sleep 0.2
 done
 
 # ---- Grab TF metrics BEFORE (optional) ----
@@ -77,6 +83,7 @@ curl -fs "http://127.0.0.1:${REST_PORT}/monitoring/prometheus/metrics" > "$TF_BE
 echo "ts_iso,request_index,latency_ms,status" > "$LAT_CSV"
 echo "ts_iso,usage_usec,user_usec,system_usec,usage_delta_ms,cpu_cores_used,cpu_pct_of_one_cpu,psi_some_avg10,psi_some_avg60,psi_some_avg300,psi_some_total,psi_full_avg10,psi_full_avg60,psi_full_avg300,psi_full_total" > "$CGROUP_CSV"
 echo "ts_iso,energy_uj,delta_uj,power_w" > "$ENERGY_CSV"
+echo "ts_iso,gpu_index,util_pct,mem_used_mb,mem_total_mb,power_w,temp_c" > "$GPU_CSV"
 
 # ---- Minimal privileged helper for RAPL (node energy) ----
 cat <<EOF | kubectl -n "$NS" apply -f - >/dev/null
@@ -110,7 +117,7 @@ read_rapl() {
   ' 2>/dev/null || echo NA
 }
 
-# ---- Start 1Hz sampler (cgroup CPU/PSI + energy) ----
+# ---- Start 1Hz sampler (cgroup CPU/PSI + energy + GPU) ----
 DONE_FLAG="$(mktemp)"; rm -f "$DONE_FLAG"
 (
   prev_usage=""
@@ -118,6 +125,7 @@ DONE_FLAG="$(mktemp)"; rm -f "$DONE_FLAG"
   while [ ! -f "$DONE_FLAG" ]; do
     ts_iso="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
+    # --- CPU + PSI from pod cgroup ---
     out="$(kubectl -n "$NS" exec "$POD" -- sh -lc '
       {
         cat /sys/fs/cgroup/cpu.stat 2>/dev/null || echo NA;
@@ -140,14 +148,12 @@ DONE_FLAG="$(mktemp)"; rm -f "$DONE_FLAG"
     sys="$(echo  "$cpu"  | awk '/^system_usec/{print $2}')"
     [ -z "${usage:-}" ] && usage="NA"
 
-    # deltas & CPU usage
     delta_ms="NA"; cores_used="NA"; pct="NA"
     if [ -n "${prev_usage:-}" ] && [ "$usage" != "NA" ]; then
       d=$((usage - prev_usage))
       [ "$d" -lt 0 ] && d=0
       delta_ms="$(awk -v x="$d" 'BEGIN{printf "%.3f", x/1000.0}')"
-      cores_used="$(awk -v ms="$delta_ms" 'BEGIN{printf "%.3f", ms/1000.0}')"     # CPU-seconds per second = cores
-      # Clamp 0..100 for "percent of one CPU"
+      cores_used="$(awk -v ms="$delta_ms" 'BEGIN{printf "%.3f", ms/1000.0}')"  # CPU-seconds per second = cores
       pct="$(awk -v ms="$delta_ms" 'BEGIN{
         val=(ms/1000.0)*100.0;
         if (val<0) val=0; if (val>100) val=100;
@@ -156,7 +162,6 @@ DONE_FLAG="$(mktemp)"; rm -f "$DONE_FLAG"
     fi
     prev_usage="${usage:-0}"
 
-    # PSI parsing (tolerant)
     some_line="$(echo "$psi" | awk '/^some / {print; exit}')"
     full_line="$(echo "$psi" | awk '/^full / {print; exit}')"
 
@@ -172,7 +177,7 @@ DONE_FLAG="$(mktemp)"; rm -f "$DONE_FLAG"
 
     echo "$ts_iso,${usage:-NA},${user:-NA},${sys:-NA},$delta_ms,$cores_used,$pct,${sa10:-NA},${sa60:-NA},${sa300:-NA},${stot:-NA},${fa10:-NA},${fa60:-NA},${fa300:-NA},${ftot:-NA}" >> "$CGROUP_CSV"
 
-    # ---- Energy (RAPL) ----
+    # --- Energy (RAPL) ---
     e="$(read_rapl)"; duj="NA"; pw="NA"
     if [ -n "${e:-}" ] && [ "$e" != "NA" ]; then
       if [ -n "${prev_energy:-}" ]; then
@@ -187,6 +192,26 @@ DONE_FLAG="$(mktemp)"; rm -f "$DONE_FLAG"
     fi
     echo "$ts_iso,${e:-NA},$duj,$pw" >> "$ENERGY_CSV"
 
+    # --- GPU metrics via nvidia-smi (from the model pod) ---
+    gpu_line="$(kubectl -n "$NS" exec "$POD" -- sh -lc '
+      if command -v nvidia-smi >/dev/null 2>&1; then
+        nvidia-smi --query-gpu=index,utilization.gpu,memory.used,memory.total,power.draw,temperature.gpu \
+          --format=csv,noheader,nounits | head -1
+      else
+        echo NA
+      fi
+    ' 2>/dev/null || echo NA)"
+
+    if [ "$gpu_line" != "NA" ] && [ -n "$gpu_line" ]; then
+      cleaned="$(echo "$gpu_line" | tr -d ' ')"
+      IFS=',' read -r gidx gutl gmem gmemtot gpow gtemp <<EOF
+$cleaned
+EOF
+      echo "$ts_iso,${gidx:-NA},${gutl:-NA},${gmem:-NA},${gmemtot:-NA},${gpow:-NA},${gtemp:-NA}" >> "$GPU_CSV"
+    else
+      echo "$ts_iso,NA,NA,NA,NA,NA,NA" >> "$GPU_CSV"
+    fi
+
     sleep 1
   done
 ) & SAMPLER=$!
@@ -198,7 +223,6 @@ python3 -m venv "$VENV"
 . "$VENV/bin/activate"
 
 if [ "$PROTO" = "grpc" ]; then
-  # grpc + TF Serving API (also installs TF-CPU for TensorProto helpers)
   pip -q install grpcio tensorflow-serving-api==2.17.0 tensorflow-cpu==2.17.0 pillow numpy requests >/dev/null
 else
   pip -q install requests pillow numpy >/dev/null
@@ -223,10 +247,9 @@ URL_REST=os.environ["URL_REST"]; URL_PRED_REST=os.environ["URL_PRED_REST"]; URL_
 MODEL_NAME=os.environ["MODEL_NAME"]; SIG_NAME=os.environ["SIG_NAME"]; INPUT_NAME_HINT=os.environ["INPUT_NAME_HINT"]
 
 def preprocess(img):
+    # GPU pipeline: simple 0–1 scaling for your current SavedModel
     img = img.convert("RGB").resize((224,224))
-    x = np.array(img, dtype=np.float32)
-    x = x[..., ::-1]  # RGB->BGR
-    x -= np.array([103.939, 116.779, 123.68], dtype=np.float32)
+    x = np.array(img, dtype=np.float32) / 255.0
     return x
 
 # Fetch image once
@@ -237,7 +260,7 @@ batch = np.stack([one]*BATCH, axis=0)  # (B, 224,224,3)
 def quantiles(lat):
     if not lat: return {}
     s=sorted(lat); L=len(s)
-    def q(p): 
+    def q(p):
         if L==1: return float(s[0])
         k=int(round(p*(L-1))); return float(s[k])
     return {"mean_ms": float(np.mean(s)), "p50_ms": q(0.5), "p90_ms": q(0.9), "p95_ms": q(0.95), "p99_ms": q(0.99)}
@@ -255,13 +278,11 @@ else:
     import grpc
     from concurrent.futures import ThreadPoolExecutor, as_completed
     from tensorflow_serving.apis import predict_pb2, prediction_service_pb2_grpc
-    # Use TensorFlow to build TensorProto efficiently (installed as tensorflow-cpu)
     try:
         import tensorflow as tf
         def to_tensor_proto(np_arr):
             return tf.make_tensor_proto(np_arr, dtype=tf.float32)
     except Exception:
-        # Manual fallback (rare)
         from tensorflow.core.framework import tensor_pb2, types_pb2, tensor_shape_pb2
         def to_tensor_proto(np_arr):
             t = tensor_pb2.TensorProto()
@@ -271,7 +292,6 @@ else:
             t.tensor_content = np_arr.astype(np.float32).tobytes()
             return t
 
-    # Auto-detect input tensor name from REST metadata (first input of serving_default)
     input_name = INPUT_NAME_HINT.strip() if INPUT_NAME_HINT else ""
     if not input_name:
         try:
@@ -285,8 +305,10 @@ else:
     if not input_name:
         raise RuntimeError("Could not determine input tensor name. Set INPUT_NAME env to your model's input key.")
 
-    # Prepare static parts
     tensor = to_tensor_proto(batch)
+    channel = grpc.insecure_channel(os.environ["GRPC_ADDR"])
+    stub = prediction_service_pb2_grpc.PredictionServiceStub(channel)
+
     def build_request():
         req = predict_pb2.PredictRequest()
         req.model_spec.name = MODEL_NAME
@@ -294,22 +316,18 @@ else:
         req.inputs[input_name].CopyFrom(tensor)
         return req
 
-    channel = grpc.insecure_channel(os.environ["GRPC_ADDR"])
-    stub = prediction_service_pb2_grpc.PredictionServiceStub(channel)
-
     def one_req(i):
         ts_iso = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
         req = build_request()
         t0=time.perf_counter()
         try:
             _ = stub.Predict(req, timeout=60)
-            code = 0  # OK
+            code = 0
         except grpc.RpcError as e:
             code = e.code().value[0] if hasattr(e.code(),"value") else -1
         lat_ms=(time.perf_counter()-t0)*1000.0
         return (ts_iso, i, lat_ms, code)
 
-# Run load
 rows=[]
 t0=time.time()
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -319,7 +337,7 @@ with ThreadPoolExecutor(max_workers=CONC) as ex:
         rows.append(f.result())
 t1=time.time()
 
-rows.sort(key=lambda x: x[1])  # by request_index
+rows.sort(key=lambda x: x[1])
 with open(OUT_CSV, "a", newline="") as f:
     w=csv.writer(f); w.writerows([[a,b,f"{c:.3f}",d] for (a,b,c,d) in rows])
 
@@ -349,10 +367,11 @@ curl -fs "http://127.0.0.1:${REST_PORT}/monitoring/prometheus/metrics" > "$TF_AF
 
 echo
 echo "Saved CSVs:"
-echo "  $LAT_CSV      # per-request latency (each request carries BATCH images)"
+echo "  $LAT_CSV      # per-request latency"
 echo "  $CGROUP_CSV   # pod CPU & PSI (1Hz)"
 echo "  $ENERGY_CSV   # node energy/power (1Hz, if RAPL available)"
-echo "Summary:"
+echo "  $GPU_CSV      # GPU utilization/memory/power/temp (1Hz)"
+echo "Summary JSON:"
 echo "  $BENCH_JSON"
 echo "Prometheus text (optional):"
 echo "  $TF_BEFORE"

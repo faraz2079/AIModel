@@ -1,0 +1,8 @@
+# Triton Inference Server GPU image (TF backend)
+FROM nvcr.io/nvidia/tritonserver:24.01-py3
+
+# Copy the model repository into container
+COPY triton_model_repository /models
+
+# Run Triton with GPU metrics enabled
+CMD ["tritonserver", "--model-repository=/models", "--http-port=8000", "--grpc-port=8001", "--metrics-port=8002", "--allow-metrics=true", "--allow-gpu-metrics=true", "--allow-cpu-metrics=true"]

@@ -1,0 +1,511 @@
+# TYPE :jax:pjrt:pjrt_executable_execution_time_usecs counter
+# TYPE :jax:pjrt:pjrt_executable_executions counter
+# TYPE :tensorflow:api:op:using_fake_quantization gauge
+# TYPE :tensorflow:cc:saved_model:load_attempt_count counter
+:tensorflow:cc:saved_model:load_attempt_count{model_path="/models/resnet50/1",status="success"} 1
+# TYPE :tensorflow:cc:saved_model:load_latency counter
+:tensorflow:cc:saved_model:load_latency{model_path="/models/resnet50/1"} 1330257
+# TYPE :tensorflow:cc:saved_model:load_latency_by_stage histogram
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="10"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="18"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="32.4"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="58.32"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="104.976"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="188.957"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="340.122"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="612.22"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="1102"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="1983.59"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="3570.47"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="6426.84"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="11568.3"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="20823"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="37481.3"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="67466.4"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="121440"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="218591"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="393464"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="708235"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="1.27482e+06"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="2.29468e+06"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="4.13043e+06"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="7.43477e+06"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="1.33826e+07"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="2.40887e+07"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="4.33596e+07"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="7.80473e+07"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="1.40485e+08"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="2.52873e+08"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="4.55172e+08"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="8.19309e+08"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="1.47476e+09"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="2.65456e+09"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="4.77821e+09"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="8.60078e+09"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="1.54814e+10"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="init_graph",le="+Inf"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_sum{model_path="/models/resnet50/1",stage="init_graph"} 143371
+:tensorflow:cc:saved_model:load_latency_by_stage_count{model_path="/models/resnet50/1",stage="init_graph"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="10"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="18"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="32.4"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="58.32"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="104.976"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="188.957"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="340.122"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="612.22"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="1102"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="1983.59"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="3570.47"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="6426.84"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="11568.3"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="20823"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="37481.3"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="67466.4"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="121440"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="218591"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="393464"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="708235"} 0
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="1.27482e+06"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="2.29468e+06"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="4.13043e+06"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="7.43477e+06"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="1.33826e+07"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="2.40887e+07"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="4.33596e+07"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="7.80473e+07"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="1.40485e+08"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="2.52873e+08"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="4.55172e+08"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="8.19309e+08"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="1.47476e+09"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="2.65456e+09"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="4.77821e+09"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="8.60078e+09"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="1.54814e+10"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_bucket{model_path="/models/resnet50/1",stage="restore_graph",le="+Inf"} 1
+:tensorflow:cc:saved_model:load_latency_by_stage_sum{model_path="/models/resnet50/1",stage="restore_graph"} 765206
+:tensorflow:cc:saved_model:load_latency_by_stage_count{model_path="/models/resnet50/1",stage="restore_graph"} 1
+# TYPE :tensorflow:config:experimental:enable_mlir_bridge_gauge_v1 gauge
+# TYPE :tensorflow:config:experimental:enable_mlir_bridge_gauge_v2 gauge
+# TYPE :tensorflow:core:bfc_allocator_delay counter
+# TYPE :tensorflow:core:checkpoint:read:read_durations histogram
+# TYPE :tensorflow:core:checkpoint:write:async_write_durations histogram
+# TYPE :tensorflow:core:checkpoint:write:checkpoint_size counter
+# TYPE :tensorflow:core:checkpoint:write:training_time_saved counter
+# TYPE :tensorflow:core:checkpoint:write:write_durations histogram
+# TYPE :tensorflow:core:direct_session_runs counter
+:tensorflow:core:direct_session_runs{} 4
+# TYPE :tensorflow:core:eager_client_error_count counter
+# TYPE :tensorflow:core:eager_context_created gauge
+# TYPE :tensorflow:core:function_graph_optimization_time_usecs counter
+# TYPE :tensorflow:core:graph_build_calls counter
+:tensorflow:core:graph_build_calls{} 3
+# TYPE :tensorflow:core:graph_build_time_usecs counter
+:tensorflow:core:graph_build_time_usecs{} 927293
+# TYPE :tensorflow:core:graph_optimization_cache_failure_count counter
+# TYPE :tensorflow:core:graph_optimization_cache_hit_count counter
+# TYPE :tensorflow:core:graph_optimization_cache_load_count counter
+# TYPE :tensorflow:core:graph_optimization_cache_miss_count counter
+# TYPE :tensorflow:core:graph_optimization_saving_time_usec counter
+# TYPE :tensorflow:core:graph_optimization_usecs counter
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizationPass",name="*"} 33849
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizationPass",name="AccumulateNV2RemovePass"} 9
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizationPass",name="BuildXlaOpsPass"} 164
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizationPass",name="CloneConstantsForBetterClusteringPass"} 9
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizationPass",name="ClusterScopingPass"} 1
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizationPass",name="EncapsulateSubgraphsPass"} 4858
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizationPass",name="EncapsulateXlaComputationsPass"} 18869
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizationPass",name="ForceXlaConstantsOnHostPass"} 69
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizationPass",name="FunctionalizeControlFlowForXlaPass"} 93
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizationPass",name="IncreaseDynamismForAutoJitPass"} 34
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizationPass",name="IsolatePlacerInspectionRequiredOpsPass"} 19
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizationPass",name="LowerFunctionalOpsPass"} 76
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizationPass",name="MarkForCompilationPass"} 6587
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizationPass",name="MklLayoutRewritePass"} 3
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizationPass",name="MlirV1CompatGraphOptimizationPass"} 58
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizationPass",name="NcclReplacePass"} 10
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizationPass",name="ParallelConcatRemovePass"} 7
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizationPass",name="PartiallyDeclusterPass"} 2526
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizationPass",name="ReportClusteringInfoPass"} 378
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizationPass",name="ZenLayoutRewritePass"} 3
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizerPass",name="common_subexpression_elimination"} 1776
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizerPass",name="constant_folding"} 1960
+:tensorflow:core:graph_optimization_usecs{kind="GraphOptimizerPass",name="function_inlining"} 3758
+:tensorflow:core:graph_optimization_usecs{kind="Grappler",name="*"} 791281
+:tensorflow:core:graph_optimization_usecs{kind="Grappler",name="OptimizeMainGraph"} 472851
+:tensorflow:core:graph_optimization_usecs{kind="Grappler",name="arithmetic_optimizer"} 35685
+:tensorflow:core:graph_optimization_usecs{kind="Grappler",name="common_subgraph_elimination"} 15646
+:tensorflow:core:graph_optimization_usecs{kind="Grappler",name="constant_folding"} 44505
+:tensorflow:core:graph_optimization_usecs{kind="Grappler",name="dependency_optimizer"} 38698
+:tensorflow:core:graph_optimization_usecs{kind="Grappler",name="function_optimizer"} 64237
+:tensorflow:core:graph_optimization_usecs{kind="Grappler",name="implementation_selector"} 5854
+:tensorflow:core:graph_optimization_usecs{kind="Grappler",name="layout"} 30497
+:tensorflow:core:graph_optimization_usecs{kind="Grappler",name="loop_optimizer"} 7387
+:tensorflow:core:graph_optimization_usecs{kind="Grappler",name="memory_optimizer"} 48277
+:tensorflow:core:graph_optimization_usecs{kind="Grappler",name="model_pruner"} 8863
+:tensorflow:core:graph_optimization_usecs{kind="Grappler",name="remapper"} 22851
+:tensorflow:core:graph_optimization_usecs{kind="Grappler",name="shape_optimizer"} 205
+:tensorflow:core:graph_optimization_usecs{kind="Grappler",name="tfg_optimizer{any(tfg-consolidate-attrs,tfg-functional-to-region,tfg.func(tfg-cf-sink),tfg-region-to-functional{force-control-capture=true},tfg-lift-legacy-call,symbol-privatize{},symbol-dce,tfg-prepare-attrs-export)}"} 31542
+:tensorflow:core:graph_optimization_usecs{kind="Grappler",name="tfg_optimizer{any(tfg-consolidate-attrs,tfg-toposort,tfg-shape-inference{graph-version=0},tfg-prepare-attrs-export)}"} 90535
+:tensorflow:core:graph_optimization_usecs{kind="TfgOptimizer",name="convert_graphdef_to_tfg"} 35416
+:tensorflow:core:graph_optimization_usecs{kind="TfgOptimizer",name="convert_tfg_to_graphdef"} 15739
+# TYPE :tensorflow:core:graph_pending_queue_length_histogram histogram
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="1"} 10
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="1.5"} 13
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="2.25"} 15
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="3.375"} 15
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="5.0625"} 17
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="7.59375"} 19
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="11.3906"} 20
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="17.0859"} 21
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="25.6289"} 21
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="38.4434"} 21
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="57.665"} 21
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="86.4976"} 21
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="129.746"} 21
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="194.62"} 21
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="291.929"} 22
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="437.894"} 22
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="656.841"} 22
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="985.261"} 22
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="1477.89"} 22
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="2216.84"} 22
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="3325.26"} 22
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="4987.89"} 22
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="7481.83"} 22
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="11222.7"} 22
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="16834.1"} 22
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="25251.2"} 22
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="37876.8"} 22
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="56815.1"} 22
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="85222.7"} 22
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="127834"} 22
+:tensorflow:core:graph_pending_queue_length_histogram_bucket{le="+Inf"} 22
+:tensorflow:core:graph_pending_queue_length_histogram_sum{} 313
+:tensorflow:core:graph_pending_queue_length_histogram_count{} 22
+# TYPE :tensorflow:core:graph_run_input_tensor_bytes histogram
+:tensorflow:core:graph_run_input_tensor_bytes_bucket{le="1"} 1
+:tensorflow:core:graph_run_input_tensor_bytes_bucket{le="4"} 1
+:tensorflow:core:graph_run_input_tensor_bytes_bucket{le="16"} 1
+:tensorflow:core:graph_run_input_tensor_bytes_bucket{le="64"} 2
+:tensorflow:core:graph_run_input_tensor_bytes_bucket{le="256"} 2
+:tensorflow:core:graph_run_input_tensor_bytes_bucket{le="1024"} 2
+:tensorflow:core:graph_run_input_tensor_bytes_bucket{le="4096"} 2
+:tensorflow:core:graph_run_input_tensor_bytes_bucket{le="16384"} 2
+:tensorflow:core:graph_run_input_tensor_bytes_bucket{le="65536"} 2
+:tensorflow:core:graph_run_input_tensor_bytes_bucket{le="262144"} 2
+:tensorflow:core:graph_run_input_tensor_bytes_bucket{le="1.04858e+06"} 4
+:tensorflow:core:graph_run_input_tensor_bytes_bucket{le="4.1943e+06"} 4
+:tensorflow:core:graph_run_input_tensor_bytes_bucket{le="1.67772e+07"} 4
+:tensorflow:core:graph_run_input_tensor_bytes_bucket{le="6.71089e+07"} 4
+:tensorflow:core:graph_run_input_tensor_bytes_bucket{le="+Inf"} 4
+:tensorflow:core:graph_run_input_tensor_bytes_sum{} 1.20429e+06
+:tensorflow:core:graph_run_input_tensor_bytes_count{} 4
+# TYPE :tensorflow:core:graph_run_output_tensor_bytes histogram
+:tensorflow:core:graph_run_output_tensor_bytes_bucket{le="1"} 0
+:tensorflow:core:graph_run_output_tensor_bytes_bucket{le="4"} 0
+:tensorflow:core:graph_run_output_tensor_bytes_bucket{le="16"} 0
+:tensorflow:core:graph_run_output_tensor_bytes_bucket{le="64"} 0
+:tensorflow:core:graph_run_output_tensor_bytes_bucket{le="256"} 0
+:tensorflow:core:graph_run_output_tensor_bytes_bucket{le="1024"} 0
+:tensorflow:core:graph_run_output_tensor_bytes_bucket{le="4096"} 0
+:tensorflow:core:graph_run_output_tensor_bytes_bucket{le="16384"} 2
+:tensorflow:core:graph_run_output_tensor_bytes_bucket{le="65536"} 2
+:tensorflow:core:graph_run_output_tensor_bytes_bucket{le="262144"} 2
+:tensorflow:core:graph_run_output_tensor_bytes_bucket{le="1.04858e+06"} 2
+:tensorflow:core:graph_run_output_tensor_bytes_bucket{le="4.1943e+06"} 2
+:tensorflow:core:graph_run_output_tensor_bytes_bucket{le="1.67772e+07"} 2
+:tensorflow:core:graph_run_output_tensor_bytes_bucket{le="6.71089e+07"} 2
+:tensorflow:core:graph_run_output_tensor_bytes_bucket{le="+Inf"} 2
+:tensorflow:core:graph_run_output_tensor_bytes_sum{} 8192
+:tensorflow:core:graph_run_output_tensor_bytes_count{} 2
+# TYPE :tensorflow:core:graph_run_time_usecs counter
+:tensorflow:core:graph_run_time_usecs{} 5658963
+# TYPE :tensorflow:core:graph_run_time_usecs_histogram histogram
+:tensorflow:core:graph_run_time_usecs_histogram_bucket{le="1000"} 1
+:tensorflow:core:graph_run_time_usecs_histogram_bucket{le="2000"} 1
+:tensorflow:core:graph_run_time_usecs_histogram_bucket{le="4000"} 1
+:tensorflow:core:graph_run_time_usecs_histogram_bucket{le="8000"} 1
+:tensorflow:core:graph_run_time_usecs_histogram_bucket{le="16000"} 1
+:tensorflow:core:graph_run_time_usecs_histogram_bucket{le="32000"} 1
+:tensorflow:core:graph_run_time_usecs_histogram_bucket{le="64000"} 2
+:tensorflow:core:graph_run_time_usecs_histogram_bucket{le="128000"} 2
+:tensorflow:core:graph_run_time_usecs_histogram_bucket{le="256000"} 2
+:tensorflow:core:graph_run_time_usecs_histogram_bucket{le="512000"} 3
+:tensorflow:core:graph_run_time_usecs_histogram_bucket{le="1.024e+06"} 3
+:tensorflow:core:graph_run_time_usecs_histogram_bucket{le="2.048e+06"} 3
+:tensorflow:core:graph_run_time_usecs_histogram_bucket{le="4.096e+06"} 3
+:tensorflow:core:graph_run_time_usecs_histogram_bucket{le="8.192e+06"} 4
+:tensorflow:core:graph_run_time_usecs_histogram_bucket{le="1.6384e+07"} 4
+:tensorflow:core:graph_run_time_usecs_histogram_bucket{le="3.2768e+07"} 4
+:tensorflow:core:graph_run_time_usecs_histogram_bucket{le="6.5536e+07"} 4
+:tensorflow:core:graph_run_time_usecs_histogram_bucket{le="1.31072e+08"} 4
+:tensorflow:core:graph_run_time_usecs_histogram_bucket{le="2.62144e+08"} 4
+:tensorflow:core:graph_run_time_usecs_histogram_bucket{le="5.24288e+08"} 4
+:tensorflow:core:graph_run_time_usecs_histogram_bucket{le="+Inf"} 4
+:tensorflow:core:graph_run_time_usecs_histogram_sum{} 5.65896e+06
+:tensorflow:core:graph_run_time_usecs_histogram_count{} 4
+# TYPE :tensorflow:core:graph_runs counter
+:tensorflow:core:graph_runs{} 4
+# TYPE :tensorflow:core:graph_unused_outputs counter
+:tensorflow:core:graph_unused_outputs{name="FusedBatchNormV3"} 100
+:tensorflow:core:graph_unused_outputs{name="Identity"} 3
+:tensorflow:core:graph_unused_outputs{name="IdentityN"} 1
+:tensorflow:core:graph_unused_outputs{name="RestoreV2"} 1
+:tensorflow:core:graph_unused_outputs{name="_FusedBatchNormEx"} 165
+# TYPE :tensorflow:core:mlir_function_pass_fallback_count counter
+# TYPE :tensorflow:core:mlir_function_pass_graph_conversion_count counter
+# TYPE :tensorflow:core:mlir_graph_optimization_pass_fallback_count counter
+# TYPE :tensorflow:core:op_expansion:graph_counter counter
+# TYPE :tensorflow:core:op_expansion:node_counter counter
+# TYPE :tensorflow:core:op_expansion:op_counter counter
+# TYPE :tensorflow:core:saved_model:read:api counter
+:tensorflow:core:saved_model:read:api{api_label="cc_load"} 1
+# TYPE :tensorflow:core:saved_model:read:count counter
+:tensorflow:core:saved_model:read:count{write_version="2"} 1
+# TYPE :tensorflow:core:saved_model:read:fingerprint gauge
+# TYPE :tensorflow:core:saved_model:read:path gauge
+:tensorflow:core:saved_model:read:path{} 0
+# TYPE :tensorflow:core:saved_model:read:path_and_singleprint gauge
+# TYPE :tensorflow:core:saved_model:write:api counter
+# TYPE :tensorflow:core:saved_model:write:count counter
+# TYPE :tensorflow:core:saved_model:write:fingerprint gauge
+# TYPE :tensorflow:core:saved_model:write:path gauge
+# TYPE :tensorflow:core:saved_model:write:path_and_singleprint gauge
+# TYPE :tensorflow:core:session_created gauge
+:tensorflow:core:session_created{} 0
+# TYPE :tensorflow:core:test_counters counter
+# TYPE :tensorflow:core:tf1_features_by_graph_count counter
+# TYPE :tensorflow:core:tf2xla:graph_compilation_failed_op_count counter
+# TYPE :tensorflow:core:tf2xla:mlir_second_phase_failed_legalization_op_count counter
+# TYPE :tensorflow:core:tf2xla:mlir_second_phase_non_static_op_count counter
+# TYPE :tensorflow:core:tf2xla:mlir_second_phase_non_static_op_skip_count counter
+# TYPE :tensorflow:core:tf2xla:tf_quant_op_count counter
+# TYPE :tensorflow:core:tf2xla:v0:mlir_failed_xla_legalize_tf_pass_count counter
+# TYPE :tensorflow:core:tf_function_compile counter
+# TYPE :tensorflow:core:tf_mlir_bridge_first_phase_count counter
+# TYPE :tensorflow:core:use_auto_outside_compilation gauge
+# TYPE :tensorflow:core:use_dynamic_padding_gauge gauge
+# TYPE :tensorflow:core:xla_compilation_time_usecs counter
+# TYPE :tensorflow:core:xla_compilations counter
+# TYPE :tensorflow:core:xla_launch_counter counter
+# TYPE :tensorflow:data:autoshard gauge
+# TYPE :tensorflow:data:autoshard_rewrite_batch_size:eligible counter
+# TYPE :tensorflow:data:autoshard_rewrite_batch_size:reason counter
+# TYPE :tensorflow:data:autotune counter
+# TYPE :tensorflow:data:autotune_stopping_criteria counter
+# TYPE :tensorflow:data:buffered_vs_budget_ratio histogram
+# TYPE :tensorflow:data:bytes_consumed counter
+# TYPE :tensorflow:data:bytes_fetched counter
+# TYPE :tensorflow:data:bytes_produced counter
+# TYPE :tensorflow:data:bytes_read counter
+# TYPE :tensorflow:data:dense_feature counter
+# TYPE :tensorflow:data:elements counter
+# TYPE :tensorflow:data:error counter
+# TYPE :tensorflow:data:experiment counter
+# TYPE :tensorflow:data:fetch_op counter
+# TYPE :tensorflow:data:filename counter
+# TYPE :tensorflow:data:fingerprint counter
+# TYPE :tensorflow:data:getelement_duration histogram
+# TYPE :tensorflow:data:getnext_duration histogram
+# TYPE :tensorflow:data:iterator_busy counter
+# TYPE :tensorflow:data:iterator_gap histogram
+# TYPE :tensorflow:data:iterator_lifetime counter
+# TYPE :tensorflow:data:model gauge
+# TYPE :tensorflow:data:optimization counter
+# TYPE :tensorflow:data:ragged_feature counter
+# TYPE :tensorflow:data:service:client_iterators counter
+# TYPE :tensorflow:data:service:cross_trainer_cache_queries counter
+# TYPE :tensorflow:data:service:cross_trainer_cache_size_bytes gauge
+# TYPE :tensorflow:data:service:data_transfer_protocol_error counter
+# TYPE :tensorflow:data:service:data_transfer_protocol_fallback counter
+# TYPE :tensorflow:data:service:data_transfer_protocol_used counter
+# TYPE :tensorflow:data:service:data_transfer_protocol_used_by_nature counter
+# TYPE :tensorflow:data:service:jobs_created counter
+# TYPE :tensorflow:data:service:optimal_number_of_workers gauge
+# TYPE :tensorflow:data:service:snapshot_bytes_committed counter
+# TYPE :tensorflow:data:service:workers_created counter
+# TYPE :tensorflow:data:sparse_feature counter
+# TYPE :tensorflow:data:used_vs_budget_ratio histogram
+# TYPE :tensorflow:serving:batching:enable_large_batch_splitting gauge
+# TYPE :tensorflow:serving:batching_session:queuing_latency histogram
+# TYPE :tensorflow:serving:batching_session:wrapped_run_count counter
+# TYPE :tensorflow:serving:mlmd_map gauge
+# TYPE :tensorflow:serving:model_warmup_latency histogram
+# TYPE :tensorflow:serving:request_count counter
+:tensorflow:serving:request_count{model_name="resnet50",status="INVALID_ARGUMENT"} 2
+:tensorflow:serving:request_count{model_name="resnet50",status="OK"} 4
+# TYPE :tensorflow:serving:request_example_count_total counter
+# TYPE :tensorflow:serving:request_example_counts histogram
+# TYPE :tensorflow:serving:request_latency histogram
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="10"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="18"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="32.4"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="58.32"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="104.976"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="188.957"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="340.122"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="612.22"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="1102"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="1983.59"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="3570.47"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="6426.84"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="11568.3"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="20823"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="37481.3"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="67466.4"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="121440"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="218591"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="393464"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="708235"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="1.27482e+06"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="2.29468e+06"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="4.13043e+06"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="7.43477e+06"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="1.33826e+07"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="2.40887e+07"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="4.33596e+07"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="7.80473e+07"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="1.40485e+08"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="2.52873e+08"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="4.55172e+08"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="8.19309e+08"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="1.47476e+09"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="",entrypoint="REST",le="+Inf"} 2
+:tensorflow:serving:request_latency_sum{model_name="resnet50",API="",entrypoint="REST"} 977
+:tensorflow:serving:request_latency_count{model_name="resnet50",API="",entrypoint="REST"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="10"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="18"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="32.4"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="58.32"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="104.976"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="188.957"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="340.122"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="612.22"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="1102"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="1983.59"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="3570.47"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="6426.84"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="11568.3"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="20823"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="37481.3"} 0
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="67466.4"} 1
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="121440"} 1
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="218591"} 1
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="393464"} 1
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="708235"} 1
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="1.27482e+06"} 1
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="2.29468e+06"} 1
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="4.13043e+06"} 1
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="7.43477e+06"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="1.33826e+07"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="2.40887e+07"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="4.33596e+07"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="7.80473e+07"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="1.40485e+08"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="2.52873e+08"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="4.55172e+08"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="8.19309e+08"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="1.47476e+09"} 2
+:tensorflow:serving:request_latency_bucket{model_name="resnet50",API="predict",entrypoint="REST",le="+Inf"} 2
+:tensorflow:serving:request_latency_sum{model_name="resnet50",API="predict",entrypoint="REST"} 5.74402e+06
+:tensorflow:serving:request_latency_count{model_name="resnet50",API="predict",entrypoint="REST"} 2
+# TYPE :tensorflow:serving:request_log_count counter
+# TYPE :tensorflow:serving:runtime_latency histogram
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="10"} 0
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="18"} 0
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="32.4"} 0
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="58.32"} 0
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="104.976"} 0
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="188.957"} 0
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="340.122"} 0
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="612.22"} 0
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="1102"} 0
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="1983.59"} 0
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="3570.47"} 0
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="6426.84"} 0
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="11568.3"} 0
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="20823"} 0
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="37481.3"} 0
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="67466.4"} 1
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="121440"} 1
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="218591"} 1
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="393464"} 1
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="708235"} 1
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="1.27482e+06"} 1
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="2.29468e+06"} 1
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="4.13043e+06"} 1
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="7.43477e+06"} 2
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="1.33826e+07"} 2
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="2.40887e+07"} 2
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="4.33596e+07"} 2
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="7.80473e+07"} 2
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="1.40485e+08"} 2
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="2.52873e+08"} 2
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="4.55172e+08"} 2
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="8.19309e+08"} 2
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="1.47476e+09"} 2
+:tensorflow:serving:runtime_latency_bucket{model_name="resnet50",API="Predict",runtime="TF1",le="+Inf"} 2
+:tensorflow:serving:runtime_latency_sum{model_name="resnet50",API="Predict",runtime="TF1"} 5.72133e+06
+:tensorflow:serving:runtime_latency_count{model_name="resnet50",API="Predict",runtime="TF1"} 2
+# TYPE :tensorflow:tpu:op_error_count counter
+# TYPE :tensorflow:tpu:variable_distribution_time counter
+# TYPE :tensorflow:tpu:xla_spmd_cores_per_replica counter
+# TYPE :xla:service:gpu:compile_time_usecs_histogram histogram
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="1000"} 0
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="2000"} 0
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="4000"} 0
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="8000"} 0
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="16000"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="32000"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="64000"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="128000"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="256000"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="512000"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="1.024e+06"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="2.048e+06"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="4.096e+06"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="8.192e+06"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="1.6384e+07"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="3.2768e+07"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="6.5536e+07"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="1.31072e+08"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="2.62144e+08"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="5.24288e+08"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="1.04858e+09"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="2.09715e+09"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="4.1943e+09"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="8.38861e+09"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="1.67772e+10"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_passes",le="+Inf"} 1
+:xla:service:gpu:compile_time_usecs_histogram_sum{phase="llvm_passes"} 15738
+:xla:service:gpu:compile_time_usecs_histogram_count{phase="llvm_passes"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="1000"} 0
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="2000"} 0
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="4000"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="8000"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="16000"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="32000"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="64000"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="128000"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="256000"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="512000"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="1.024e+06"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="2.048e+06"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="4.096e+06"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="8.192e+06"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="1.6384e+07"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="3.2768e+07"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="6.5536e+07"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="1.31072e+08"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="2.62144e+08"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="5.24288e+08"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="1.04858e+09"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="2.09715e+09"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="4.1943e+09"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="8.38861e+09"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="1.67772e+10"} 1
+:xla:service:gpu:compile_time_usecs_histogram_bucket{phase="llvm_to_ptx_only",le="+Inf"} 1
+:xla:service:gpu:compile_time_usecs_histogram_sum{phase="llvm_to_ptx_only"} 3375
+:xla:service:gpu:compile_time_usecs_histogram_count{phase="llvm_to_ptx_only"} 1
