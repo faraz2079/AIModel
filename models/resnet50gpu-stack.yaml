@@ -1,5 +1,5 @@
 # -------------------------
-# Namespace for the model
+# Namespace
 # -------------------------
 apiVersion: v1
 kind: Namespace
@@ -7,7 +7,7 @@ metadata:
   name: aimodel
 ---
 # -------------------------
-# TF Serving monitoring config (enables /monitoring/prometheus/metrics)
+# TF Serving monitoring
 # -------------------------
 apiVersion: v1
 kind: ConfigMap
@@ -22,17 +22,19 @@ data:
     }
 ---
 # -------------------------
-# Service (named ports used by ServiceMonitor)
+# Service
 # -------------------------
 apiVersion: v1
 kind: Service
 metadata:
   name: resnet50-service
   namespace: aimodel
-  labels: { app: resnet50 }
+  labels:
+    app: resnet50
 spec:
   type: ClusterIP
-  selector: { app: resnet50 }
+  selector:
+    app: resnet50
   ports:
     - name: grpc
       port: 8500
@@ -49,28 +51,27 @@ kind: Deployment
 metadata:
   name: resnet50-tfserving
   namespace: aimodel
-  labels: { app: resnet50 }
+  labels:
+    app: resnet50
 spec:
   replicas: 1
-  strategy: { type: Recreate }   # ensure no second pod during updates
+  strategy:
+    type: Recreate
   selector:
-    matchLabels: { app: resnet50 }
+    matchLabels:
+      app: resnet50
   template:
     metadata:
-      labels: { app: resnet50 }
+      labels:
+        app: resnet50
     spec:
       tolerations:
         - key: "node-role.kubernetes.io/control-plane"
           effect: "NoSchedule"
         - key: "node-role.kubernetes.io/master"
           effect: "NoSchedule"
-      # Optionally pin to your GPU node later, e.g.:
-      # nodeSelector:
-      #   kubernetes.io/hostname: ubuntu
       containers:
         - name: tfserving
-          # 🔴 CHANGE THIS TO YOUR GPU IMAGE
-          # e.g. a new image you build from a TF Serving GPU base
           image: docker.io/faraz2079/resnet50-serving-gpu:1
           imagePullPolicy: IfNotPresent
           args:
@@ -84,8 +85,11 @@ spec:
               containerPort: 8500
             - name: rest
               containerPort: 8501
-          # 🔥 This makes the pod actually *get* a GPU from the node
           resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+              nvidia.com/gpu: 1
             limits:
               nvidia.com/gpu: 1
           volumeMounts:
@@ -101,7 +105,7 @@ spec:
                 path: monitoring_config.pbtxt
 ---
 # -------------------------
-# RBAC so Prometheus can discover/target this Service
+# Prometheus RBAC
 # -------------------------
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -131,7 +135,7 @@ subjects:
   namespace: monitoring
 ---
 # -------------------------
-# ServiceMonitor (lives in monitoring ns)
+# ServiceMonitor
 # -------------------------
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -140,7 +144,8 @@ metadata:
   namespace: monitoring
 spec:
   namespaceSelector:
-    matchNames: ["aimodel"]
+    matchNames:
+      - aimodel
   selector:
     matchLabels:
       app: resnet50
