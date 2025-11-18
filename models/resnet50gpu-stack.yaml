@@ -42,7 +42,7 @@ spec:
       targetPort: 8501
 ---
 # -------------------------
-# Deployment (uses your Docker Hub image, Recreate = only 1 pod)
+# GPU Deployment
 # -------------------------
 apiVersion: apps/v1
 kind: Deployment
@@ -64,9 +64,14 @@ spec:
           effect: "NoSchedule"
         - key: "node-role.kubernetes.io/master"
           effect: "NoSchedule"
+      # Optionally pin to your GPU node later, e.g.:
+      # nodeSelector:
+      #   kubernetes.io/hostname: ubuntu
       containers:
         - name: tfserving
-          image: docker.io/faraz2079/resnet50-serving:2   # <— your published image
+          # 🔴 CHANGE THIS TO YOUR GPU IMAGE
+          # e.g. a new image you build from a TF Serving GPU base
+          image: docker.io/faraz2079/resnet50-serving-gpu:1
           imagePullPolicy: IfNotPresent
           args:
             - --port=8500
@@ -79,13 +84,10 @@ spec:
               containerPort: 8500
             - name: rest
               containerPort: 8501
-          readinessProbe:
-            httpGet:
-              path: /v1/models/resnet50
-              port: 8501
-            initialDelaySeconds: 5
-            periodSeconds: 5
-            failureThreshold: 12
+          # 🔥 This makes the pod actually *get* a GPU from the node
+          resources:
+            limits:
+              nvidia.com/gpu: 1
           volumeMounts:
             - name: monitoring-config
               mountPath: /config
@@ -100,7 +102,6 @@ spec:
 ---
 # -------------------------
 # RBAC so Prometheus can discover/target this Service
-# (assumes kube-prometheus and SA "prometheus-k8s" in namespace monitoring)
 # -------------------------
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
