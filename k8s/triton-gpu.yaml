@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: triton-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: triton
+  template:
+    metadata:
+      labels:
+        app: triton
+    spec:
+      containers:
+        - name: triton
+          image: faraz2079/resnet50-triton:latest
+          args: ["tritonserver", "--model-repository=/models"]
+          ports:
+            - containerPort: 8000   # HTTP
+            - containerPort: 8001   # gRPC
+            - containerPort: 8002   # Metrics
+          resources:
+            limits:
+              nvidia.com/gpu: 1   # Request exactly one GPU
+          volumeMounts:
+            - mountPath: /models
+              name: model-repo
+      volumes:
+        - name: model-repo
+          hostPath:
+            path: /home/faraz/project/AIModel/triton_model_repository
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: triton-service
+spec:
+  selector:
+    app: triton
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+    - name: grpc
+      port: 8001
+      targetPort: 8001
+    - name: metrics
+      port: 8002
+      targetPort: 8002
+  type: NodePort
