@@ -1,13 +1,45 @@
-# Ignore TensorFlow models
-new_savedmodel/
-triton_model_repository/**/model.savedmodel/
-triton_model_repository/**/saved_model.pb
-triton_model_repository/**/variables/
-triton_model_repository/**/assets/
-models/
-*.pb
-*.tar.gz
-
-# Ignore virtual environments
+###############
+# PYTHON ENV  #
+###############
 venv/
 tfenv/
+__pycache__/
+*.pyc
+
+###############################
+# BUILD / CACHE / TEMP FILES  #
+###############################
+*.log
+*.tmp
+*.swp
+
+#################
+# MODEL TRAINING
+#################
+
+# Local TF exports not used
+new_savedmodel/
+models/
+*.tar.gz
+*.pb
+
+# DO NOT ignore Triton models!
+# Keep the Triton repository intact in Git.
+
+#########################
+# RUNTIME / BENCHMARKING
+#########################
+
+# Loadgen traces and results
+workload/traces/
+workload/*.csv
+
+# Any other workload outputs
+*.csv
+
+#########################
+# EDITOR / TOOLING JUNK #
+#########################
+.DS_Store
+.idea/
+.vscode/
