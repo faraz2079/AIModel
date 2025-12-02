@@ -1,111 +1,100 @@
-# (optional but tidy) python venv
-`python3 -m venv ~/venvs/tfexport && source ~/venvs/tfexport/bin/activate`
+This project provides an end-to-end GPU inference pipeline using the NVIDIA Triton Inference Server, a ResNet-50 model, a Python client, and a Kubernetes load generator with full GPU metrics collection (DCGM + Prometheus + Grafana).
 
-`pip install --upgrade pip "tensorflow==2.14.1" pillow requests`
+The workflow below shows how to deploy this entire system on any new VM from scratch.
 
-# export ResNet50 once; creates SavedModel at $MODEL_DIR/1
+1. Clone the Repo
 
-`export MODEL_DIR="$HOME/models/resnet50"`
+`git clone https://github.com/<your-username>/AIModel.git`
 
-`python - <<'PY'
-import tensorflow as tf
-from tensorflow.keras.applications import ResNet50
-m = ResNet50(weights="imagenet")
-tf.saved_model.save(m, f"{__import__('os').environ['MODEL_DIR']}/1")
-print("Saved model to:", f"{__import__('os').environ['MODEL_DIR']}/1")
-PY`
+`cd AIModel`
 
+3. Install Dependencies on the VM
+   
+Nvidia GPU Stack:
 
-# Run the yaml file to install the app
-Go to the models directory and run: 
-` ./resnet50-stack.yaml `
+`sudo apt update`
 
+`sudo apt install -y nvidia-driver-535 nvidia-container-toolkit`
 
-# Deploy the monitoring stack:
+`sudo nvidia-ctk runtime configure --runtime=crio`
 
-`git clone --depth 1 https://github.com/prometheus-operator/kube-prometheus; cd kube-prometheus;`
+`sudo systemctl restart crio`
 
-KEPLER_EXPORTER_GRAFANA_DASHBOARD_JSON=`curl -fsSL https://raw.githubusercontent.com/sustainable-computing-io/kepler/main/grafana-dashboards/Kepler-Exporter.json | sed '1 ! s/^/ /'`
+check the Driver: 
 
-`mkdir -p grafana-dashboards`
+`nvidia-smi`
 
-`cat - > ./grafana-dashboards/kepler-exporter-configmap.yaml << EOF
-apiVersion: v1
-data:
-kepler-exporter.json: |-
-$KEPLER_EXPORTER_GRAFANA_DASHBOARD_JSON
-kind: ConfigMap
-metadata:
-labels:
-app.kubernetes.io/component: grafana
-app.kubernetes.io/name: grafana
-app.kubernetes.io/part-of: kube-prometheus
-app.kubernetes.io/version: 9.5.3
-name: grafana-dashboard-kepler-exporter
-namespace: monitoring
-EOF`
+3. Deploy Triton Server on Kubernetes
 
+The model is already included in the repo under:
 
-`sudo snap install yq`
+`triton_model_repository/resnet50/`
 
-`yq -i e '.items += [load("./grafana-dashboards/kepler-exporter-configmap.yaml")]' ./manifests/grafana-dashboardDefinitions.yaml`
+Deploy Triton:
 
-`yq -i e '.spec.template.spec.containers.0.volumeMounts += [ {"mountPath": "/grafana-dashboard-definitions/0/kepler-exporter", "name": "grafana-dashboard-kepler-exporter", "readOnly": false} ]' ./manifests/grafana-deployment.yaml`
+`kubectl apply -f k8s/triton-gpu.yaml`
 
-`yq -i e '.spec.template.spec.volumes += [ {"configMap": {"name": "grafana-dashboard-kepler-exporter"}, "name": "grafana-dashboard-kepler-exporter"} ]' ./manifests/grafana-deployment.yaml`
+`kubectl apply -f k8s/triton-service.yaml`
 
+`kubectl apply -f k8s/triton-prom-scrape.yaml`
 
-`kubectl apply --server-side -f manifests/setup`
+4. Test Inference Using Python Client
 
-`until kubectl get servicemonitors --all-namespaces ; do date; sleep 1; echo ""; done`
-`kubectl apply -f manifests/`
+Activate local Python env:
 
+`source venv/bin/activate`
 
-# For testing the image processing of the model:
+Run inference:
 
-> Requires the service to be reachable, e.g.
-> `kubectl -n aimodel port-forward svc/resnet50-service 8501:8501`
+`python3 client/client_resnet50.py \
+  --image scripts/kitten_small.jpg \
+  --url http://<NODE-IP>:<NODEPORT>`
 
-```bash
-# 1) make sure the service is reachable locally
-kubectl -n aimodel port-forward svc/resnet50-service 8501:8501 >/dev/null 2>&1 &
+5. Run 5-Minute Load Generator (Workload)
 
-# 2) tiny env (no TensorFlow)
-python3 -m venv /tmp/tfserve-test && source /tmp/tfserve-test/bin/activate
-pip install -q requests pillow numpy
+`docker pull faraz2079/loadgen:latest`
 
-# send N requests and print simple timings
-python3 - <<'PY'
-import io, time, statistics, numpy as np, requests
-from PIL import Image
+Run via Kubernetes job:
 
-URL = "http://localhost:8501/v1/models/resnet50:predict"
-IMG = "https://raw.githubusercontent.com/awslabs/mxnet-model-server/master/docs/images/kitten_small.jpg"
+`cd workload`
 
-def preprocess(img):
-img = img.convert("RGB").resize((224,224))
-x = np.array(img, dtype=np.float32)
-x = x[..., ::-1]
-x -= np.array([103.939, 116.779, 123.68], dtype=np.float32)
-return np.expand_dims(x, 0).tolist()
+`chmod +x run_workload.sh`
 
-img = Image.open(io.BytesIO(requests.get(IMG, timeout=20).content))
-x = preprocess(img)
+`./run_workload.sh`
 
-lat = []
-for _ in range(200): # bump this if you want more load
-t0 = time.perf_counter()
-r = requests.post(URL, json={"instances": x}, timeout=30)
-r.raise_for_status()
-lat.append((time.perf_counter() - t0)*1000)
+This script:
+	1.	Deletes previous job
+	2.	Starts a new 5-minute workload job
+	3.	Waits until completion
+	4.	Copies trace.csv to the local machine
+	5.	Saves it under:
 
-print(f"Requests: {len(lat)} mean(ms)={statistics.mean(lat):.1f} p95(ms)={statistics.quantiles(lat, n=20)[18]:.1f}")
-PY
-```
+`workload/traces/trace-YYYYMMDD-HHMMSS.csv`
 
+6. Enable GPU Metrics: DCGM Exporter
 
-# For running and overriding the defaults:
+The project expects DCGM to expose GPU metrics to Prometheus.
+Before that make sure you deployed the monitoring stack
 
-`./scripts/run_bench_csv.sh`
+`kubectl apply -f https://raw.githubusercontent.com/NVIDIA/dcgm-exporter/master/dcgm-exporter.yaml -n monitoring`
 
-`BATCH=8 REQS=1000 CONC=16 NS=aimodel SVC=resnet50-service ./scripts/run_bench_csv.sh`
+`curl -s localhost:9400/metrics | grep DCGM`
+
+GPU metrics query to visualize in grafana:
+	•	DCGM_FI_DEV_GPU_UTIL
+  
+	•	DCGM_FI_DEV_MEM_COPY_UTIL
+  
+	•	DCGM_FI_DEV_FB_USED
+  
+	•	DCGM_FI_DEV_POWER_USAGE
+  
+	•	DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION
+  
+	•	DCGM_FI_PROF_PIPE_TENSOR_ACTIVE
+  
+	•	DCGM_FI_PROF_DRAM_ACTIVE
+    
+	•	DCGM_FI_PROF_PCIE_RX_BYTES
+
+  	•	DCGM_FI_PROF_PCIE_TX_BYTES
