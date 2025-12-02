@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: resnet50-loadgen
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: loadgen
+          image: faraz2079/loadgen:latest
+          command: ["python3", "loadgen_resnet50.py"]
+          args:
+            - "--url"
+            - "http://triton-service.default.svc.cluster.local:8000"
+            - "--image"
+            - "/app/image.jpg"
+            - "--duration"
+            - "300"
+            - "--output"
+            - "/results/trace.csv"
+          volumeMounts:
+            - name: results
+              mountPath: /results
+      volumes:
+        - name: results
+          persistentVolumeClaim:
+            claimName: loadgen-results
