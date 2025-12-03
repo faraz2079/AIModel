@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: yolo-loadgen
+  namespace: odm-gpu
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      volumes:
+        - name: results
+          persistentVolumeClaim:
+            claimName: odm-loadgen-results
+      containers:
+        - name: yolo-loadgen
+          image: faraz2079/yolo-loadgen:latest
+          args:
+            [
+              "--url", "http://yolov8n-gpu-svc.odm-gpu.svc.cluster.local:8000/infer",
+              "--image", "/app/image.jpg",
+              "--duration", "300",
+              "--output", "/results/trace.csv"
+            ]
+          volumeMounts:
+            - name: results
+              mountPath: /results

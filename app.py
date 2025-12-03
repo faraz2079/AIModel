@@ -1,13 +1,18 @@
 from fastapi import FastAPI, UploadFile, HTTPException
 from ultralytics import YOLO
 import cv2, numpy as np, time
+import torch
 
-app = FastAPI(title="YOLOv8n CPU Object Detection API")
+app = FastAPI(title="YOLOv8n GPU Object Detection API")
 
-# Load YOLO model (auto-downloads if not found)
+# Ensure GPU is present
+if not torch.cuda.is_available():
+    raise RuntimeError("GPU not available inside the container")
+
+# Load model on GPU
 model = YOLO("yolov8n.pt")
+model.to("cuda")   # force load on GPU
 
-# Simple in-memory metrics
 stats = {
     "total_requests": 0,
     "total_latency": 0.0,
@@ -15,12 +20,10 @@ stats = {
 
 @app.get("/health")
 def health():
-    """Health endpoint for Kubernetes readiness/liveness probes."""
     return {"status": "ok"}
 
 @app.get("/metrics")
 def metrics():
-    """Return current API statistics."""
     avg_latency = (
         stats["total_latency"] / stats["total_requests"]
         if stats["total_requests"] > 0 else 0.0
@@ -37,13 +40,13 @@ async def infer(file: UploadFile):
         image_bytes = await file.read()
         np_img = np.frombuffer(image_bytes, np.uint8)
         img = cv2.imdecode(np_img, cv2.IMREAD_COLOR)
+
         if img is None:
             raise HTTPException(status_code=400, detail="Failed to decode image.")
 
-        results = model.predict(source=img, device="cpu", verbose=False)
+        results = model.predict(source=img, device=0, verbose=False)
         detections = results[0].to_json()
 
-        # Update metrics
         latency = time.time() - start_time
         stats["total_requests"] += 1
         stats["total_latency"] += latency
