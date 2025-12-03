@@ -1,0 +1,55 @@
+[200~# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+tfenv/
+
+# Environment files
+.env
+*.env
+
+# Python packaging
+dist/
+build/
+*.egg-info/
+
+# Cache and temp files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Docker artifacts
+*.tar
+*.pid
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/
+.settings/
+
+# JetBrains IDE
+.idea/
+
+# Workload traces (generated output, not source)
+workload/traces/
+
+# Node or frontend junk (if ever added)
+node_modules/
+
+# Ultralytics cache (YOLO)
+ultralytics/
+runs/
+
+# Local test images/files
+sample.jpg
+
+# Kubernetes generated/manifests overrides
+*.backup
+*.bak
