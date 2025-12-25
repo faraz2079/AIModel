@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# =====================================================
+# Hybrid GPU Inference – Parallel Workload Experiment
+#
+# NOTE:
+# - This script assumes it is run on the GPU node
+#   (nvidia-smi is executed locally).
+# - For remote execution, prefer DCGM exporter metrics.
+# =====================================================
+
 # ==============================
 # CONFIG
 # ==============================
@@ -15,6 +24,15 @@ mkdir -p "$OUTDIR"
 echo "[INFO] Results will be stored in: $OUTDIR"
 
 # ==============================
+# CLEANUP HANDLER
+# ==============================
+cleanup() {
+  echo "[INFO] Cleaning up background processes..."
+  kill ${PF_PID:-} ${GPU_PID:-} ${LOG_PID:-} 2>/dev/null || true
+}
+trap cleanup EXIT
+
+# ==============================
 # PORT-FORWARD
 # ==============================
 echo "[INFO] Starting port-forward..."
@@ -22,12 +40,24 @@ kubectl port-forward -n "$NAMESPACE" deployment/"$DEPLOYMENT" $PORT:$PORT \
   > "$OUTDIR/portforward.log" 2>&1 &
 PF_PID=$!
 
-sleep 5
+echo "[INFO] Waiting for port-forward readiness..."
+for i in {1..30}; do
+  if curl -s "http://localhost:$PORT/docs" >/dev/null 2>&1; then
+    echo "[INFO] Port-forward is ready."
+    break
+  fi
+  sleep 1
+  if ! kill -0 "$PF_PID" >/dev/null 2>&1; then
+    echo "[ERROR] Port-forward process died."
+    echo "[ERROR] Check $OUTDIR/portforward.log"
+    exit 1
+  fi
+done
 
 # ==============================
 # GPU MONITORING
 # ==============================
-echo "[INFO] Starting GPU monitoring..."
+echo "[INFO] Starting GPU monitoring (nvidia-smi)..."
 (
   while true; do
     date "+%F %T"
@@ -64,7 +94,7 @@ jq -n --rawfile img "$OUTDIR/img.b64" \
 # ==============================
 # PARALLEL REQUESTS
 # ==============================
-echo "[INFO] Sending parallel requests..."
+echo "[INFO] Sending parallel GPU workloads..."
 
 (
   echo "=== CLASSIFICATION START ==="
@@ -90,12 +120,6 @@ echo "[INFO] Sending parallel requests..."
 
 wait
 
-# ==============================
-# CLEANUP
-# ==============================
-echo "[INFO] Stopping background processes..."
-kill $PF_PID $GPU_PID $LOG_PID || true
-
 echo "[INFO] Experiment finished."
 
 # ==============================
@@ -107,17 +131,26 @@ cat <<EOF
 EXPERIMENT COMPLETE
 ==============================
 
-Artifacts:
-- Pod logs:           $OUTDIR/pod.log
-- GPU utilization:    $OUTDIR/nvidia-smi.log
-- Classification:     $OUTDIR/classification.out
-- Detection:          $OUTDIR/detection.out
+Artifacts generated in:
+  $OUTDIR/
 
-To verify prioritization:
-  grep "SCHEDULER" $OUTDIR/pod.log
+Key files:
+- Pod logs:           pod.log
+- GPU utilization:    nvidia-smi.log
+- Classification:     classification.out
+- Detection:          detection.out
 
-To verify GPU usage:
-  less $OUTDIR/nvidia-smi.log
+How to analyze:
+
+1) Scheduler behavior / prioritization:
+   grep "SCHEDULER" $OUTDIR/pod.log
+
+2) GPU utilization timeline:
+   less $OUTDIR/nvidia-smi.log
+
+3) Per-request latency:
+   less $OUTDIR/classification.out
+   less $OUTDIR/detection.out
 
 ==============================
 EOF
