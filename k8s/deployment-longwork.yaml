@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hybrid-gpu-infer-longwork
+  namespace: sa
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: hybrid-gpu-infer
+  template:
+    metadata:
+      labels:
+        app: hybrid-gpu-infer
+    spec:
+      containers:
+      - name: hybrid-gpu-infer-longwork
+        image: faraz2079/hybrid-gpu-infer:longwork-final
+        ports:
+        - containerPort: 8000
+        env:
+        - name: WORKERS
+          value: "1"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: YOLO_WEIGHTS
+          value: "yolov8n.pt"
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+          requests:
+            nvidia.com/gpu: 1

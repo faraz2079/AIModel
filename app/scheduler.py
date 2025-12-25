@@ -1,32 +1,38 @@
 import asyncio
-from collections import deque
-from typing import Callable, Any
+import time
+from concurrent.futures import ThreadPoolExecutor
+from loguru import logger
+
 
 class GPUScheduler:
+    """
+    Single-GPU cooperative scheduler.
+
+    Guarantees:
+    - Only ONE GPU task runs at a time
+    - FIFO fairness
+    - Explicit queue + execution timing
+    - Blocking GPU work runs in a single worker thread
+    """
+
     def __init__(self):
         self._lock = asyncio.Lock()
-        self._queue = deque()
-        self._queue_lock = asyncio.Lock()
+        self._executor = ThreadPoolExecutor(max_workers=1)
 
-    async def run(self, fn: Callable[[], Any]) -> Any:
-        loop = asyncio.get_running_loop()
-        fut = loop.create_future()
-
-        async with self._queue_lock:
-            self._queue.append(fut)
-
-        # FIFO fairness
-        while True:
-            async with self._queue_lock:
-                if self._queue and self._queue[0] is fut:
-                    break
-            await asyncio.sleep(0.001)
+    async def run(self, fn):
+        """
+        fn: synchronous callable that performs GPU work
+        """
+        logger.info("[SCHEDULER] Request entered scheduler queue")
 
         async with self._lock:
-            try:
-                # run blocking GPU work safely
-                result = await loop.run_in_executor(None, fn)
-                return result
-            finally:
-                async with self._queue_lock:
-                    self._queue.popleft()
+            logger.info("[SCHEDULER] GPU lock acquired")
+            start = time.time()
+
+            loop = asyncio.get_running_loop()
+            result = await loop.run_in_executor(self._executor, fn)
+
+            elapsed = time.time() - start
+            logger.info(f"[SCHEDULER] GPU task finished in {elapsed:.2f}s")
+
+            return result
