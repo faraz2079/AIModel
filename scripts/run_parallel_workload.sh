@@ -4,10 +4,16 @@ set -euo pipefail
 # =====================================================
 # Hybrid GPU Inference – Parallel Workload Experiment
 #
-# NOTE:
-# - This script assumes it is run on the GPU node
-#   (nvidia-smi is executed locally).
-# - For remote execution, prefer DCGM exporter metrics.
+# WHAT THIS SCRIPT PRODUCES
+# - Client end-to-end latency (CSV)
+# - Scheduler queue latency (CSV)
+# - GPU execution time (CSV)
+# - Raw pod logs
+# - GPU utilization timeline (nvidia-smi)
+#
+# ASSUMPTIONS
+# - Run on the GPU node (for nvidia-smi)
+# - Single replica deployment
 # =====================================================
 
 # ==============================
@@ -49,7 +55,6 @@ for i in {1..30}; do
   sleep 1
   if ! kill -0 "$PF_PID" >/dev/null 2>&1; then
     echo "[ERROR] Port-forward process died."
-    echo "[ERROR] Check $OUTDIR/portforward.log"
     exit 1
   fi
 done
@@ -92,33 +97,58 @@ jq -n --rawfile img "$OUTDIR/img.b64" \
   > "$OUTDIR/detect.json"
 
 # ==============================
-# PARALLEL REQUESTS
+# CLIENT-SIDE LATENCY CAPTURE
 # ==============================
+CLIENT_LAT="$OUTDIR/latency_client.csv"
+echo "request,type,start_ts,end_ts,latency_seconds" > "$CLIENT_LAT"
+
+run_request () {
+  TYPE="$1"
+  JSON="$2"
+
+  START=$(date +%s.%N)
+  curl -s -X POST http://localhost:$PORT/infer \
+    -H "Content-Type: application/json" \
+    --data-binary @"$JSON" > "$OUTDIR/${TYPE}.response"
+  END=$(date +%s.%N)
+
+  LAT=$(echo "$END - $START" | bc)
+  echo "$(date +%F_%T),$TYPE,$START,$END,$LAT" >> "$CLIENT_LAT"
+}
+
 echo "[INFO] Sending parallel GPU workloads..."
-
-(
-  echo "=== CLASSIFICATION START ==="
-  date "+%F %T"
-  time curl -s -X POST http://localhost:$PORT/infer \
-    -H "Content-Type: application/json" \
-    --data-binary @"$OUTDIR/classify.json"
-  echo
-  date "+%F %T"
-  echo "=== CLASSIFICATION END ==="
-) > "$OUTDIR/classification.out" 2>&1 &
-
-(
-  echo "=== DETECTION START ==="
-  date "+%F %T"
-  time curl -s -X POST http://localhost:$PORT/infer \
-    -H "Content-Type: application/json" \
-    --data-binary @"$OUTDIR/detect.json"
-  echo
-  date "+%F %T"
-  echo "=== DETECTION END ==="
-) > "$OUTDIR/detection.out" 2>&1 &
-
+run_request classification "$OUTDIR/classify.json" &
+run_request detection "$OUTDIR/detect.json" &
 wait
+
+echo "[INFO] Requests completed."
+
+# ==============================
+# POST-PROCESS LATENCIES
+# ==============================
+echo "[INFO] Extracting scheduler and GPU latencies..."
+
+# Scheduler latency
+SCHED_LAT="$OUTDIR/latency_scheduler.csv"
+echo "queue_enter_ts,gpu_acquire_ts,wait_seconds" > "$SCHED_LAT"
+
+grep "SCHEDULER" "$OUTDIR/pod.log" \
+| awk '
+/entered scheduler queue/ { q=$1" "$2 }
+/GPU lock acquired/ {
+  a=$1" "$2
+  cmd="date -d \""q"\" +%s"; cmd | getline qs; close(cmd)
+  cmd="date -d \""a"\" +%s"; cmd | getline as; close(cmd)
+  print q","a","as-qs
+}' >> "$SCHED_LAT"
+
+# GPU execution latency
+GPU_LAT="$OUTDIR/latency_gpu.csv"
+echo "model,execution_seconds" > "$GPU_LAT"
+
+grep "Inference finished after" "$OUTDIR/pod.log" \
+| sed -E 's/.*\[(ResNet|YOLO)\].*after ([0-9.]+)s/\1,\2/' \
+>> "$GPU_LAT"
 
 echo "[INFO] Experiment finished."
 
@@ -131,26 +161,23 @@ cat <<EOF
 EXPERIMENT COMPLETE
 ==============================
 
-Artifacts generated in:
+Artifacts in:
   $OUTDIR/
 
-Key files:
-- Pod logs:           pod.log
-- GPU utilization:    nvidia-smi.log
-- Classification:     classification.out
-- Detection:          detection.out
+Core metrics:
+- Client latency:        latency_client.csv
+- Scheduler wait time:   latency_scheduler.csv
+- GPU execution time:    latency_gpu.csv
+- GPU utilization:       nvidia-smi.log
+- Pod logs:              pod.log
 
-How to analyze:
-
-1) Scheduler behavior / prioritization:
-   grep "SCHEDULER" $OUTDIR/pod.log
-
-2) GPU utilization timeline:
-   less $OUTDIR/nvidia-smi.log
-
-3) Per-request latency:
-   less $OUTDIR/classification.out
-   less $OUTDIR/detection.out
+Analysis tips:
+- Scheduler behavior:
+    grep "SCHEDULER" pod.log
+- Plot latency:
+    latency_client.csv
+- Correlate with energy:
+    nvidia-smi.log + DCGM metrics
 
 ==============================
 EOF
