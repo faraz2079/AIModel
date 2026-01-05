@@ -86,7 +86,15 @@ The entire experiment is automated.
 
 One-Command Experiment:
 
-`bash scripts/run_parallel_workload.sh`
+`nohup ./scripts/run_parallel_workload.sh > run.log 2>&1 &`
+
+`tail -f run.log`
+
+For observing: 
+
+`watch -n 2 nvidia-smi`
+
+
 
 What the script does:
 
