@@ -1,0 +1,9 @@
+=== CLASSIFICATION START ===
+2026-01-05 13:38:01
+{"model":"resnet50","device":"cuda","runtime_seconds":300.06,"top5":[{"label":"minibus","prob":0.19006912410259247},{"label":"trolleybus","prob":0.08053933829069138},{"label":"streetcar","prob":0.06113174557685852},{"label":"police van","prob":0.02318236231803894},{"label":"passenger car","prob":0.02270997129380703}]}
+real	10m0.218s
+user	0m0.014s
+sys	0m0.013s
+
+2026-01-05 13:48:01
+=== CLASSIFICATION END ===
