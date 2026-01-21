@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gpu-scheduler
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gpu-scheduler
+  template:
+    metadata:
+      labels:
+        app: gpu-scheduler
+    spec:
+      containers:
+        - name: scheduler
+          image: gpu-scheduler:v5
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gpu-scheduler
+  namespace: default
+spec:
+  selector:
+    app: gpu-scheduler
+  ports:
+    - port: 8080
+      targetPort: 8080

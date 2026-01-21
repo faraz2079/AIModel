@@ -1,0 +1,10 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install required Python deps
+RUN pip install --no-cache-dir fastapi uvicorn requests
+
+COPY gpu_scheduler.py /app/gpu_scheduler.py
+
+CMD ["uvicorn", "gpu_scheduler:app", "--host", "0.0.0.0", "--port", "8080"]
