@@ -7,37 +7,46 @@ spec:
   completions: 4
   parallelism: 4
   backoffLimit: 0
-  ttlSecondsAfterFinished: 300
+  ttlSecondsAfterFinished: 600
 
   template:
     metadata:
       labels:
         app: resnet50-coop-client
-
     spec:
       restartPolicy: Never
 
-      # IMPORTANT: we rely on NVIDIA time-slicing, NOT Kubernetes GPU scheduling
       nodeSelector:
         nvidia.com/gpu.present: "true"
 
       containers:
         - name: resnet50-coop
-          image: docker.io/library/resnet50-coop:v2
-          imagePullPolicy: IfNotPresent
+          image: resnet50-coop:v5
+          imagePullPolicy: Never
 
           env:
             - name: SCHEDULER_URL
               value: "http://gpu-scheduler.default.svc.cluster.local:8080"
 
-            - name: SLICE_STEPS
-              value: "50"
+            - name: SLICE_ITERS
+              value: "20"
 
-            - name: MAX_STEPS
+            - name: TOTAL_ITERS
               value: "200"
 
+            - name: WARMUP_ITERS
+              value: "10"
+
             - name: BATCH_SIZE
-              value: "8"
+              value: "4"
+
+            # Cooperative memory behavior
+            - name: TF_FORCE_GPU_ALLOW_GROWTH
+              value: "true"
+
+            # Hard per-pod cap; tune as needed (e.g., 2500–3500)
+            - name: GPU_MEM_LIMIT_MB
+              value: "3000"
 
             - name: CLIENT_ID
               valueFrom:
@@ -47,8 +56,11 @@ spec:
             - name: PRIORITY
               value: "10"
 
-            - name: CHECKPOINT_DIR
+            - name: RESULTS_DIR
               value: "/mnt/checkpoints"
+
+            - name: RUN_ID
+              value: "resnet50_real"
 
           volumeMounts:
             - name: checkpoints
