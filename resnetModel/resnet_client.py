@@ -1,212 +1,183 @@
 import os
 import time
 import json
-import socket
-import requests
+import csv
+import logging
 from datetime import datetime
 
-# NOTE: We intentionally do NOT import tensorflow at module import time.
-# We import it only AFTER the scheduler grants a slice to avoid eager GPU init.
+import tensorflow as tf
+import numpy as np
+import requests
 
-def now_iso():
-    return datetime.utcnow().isoformat() + "Z"
+# ------------------------
+# Environment
+# ------------------------
+SCHEDULER_URL = os.getenv("SCHEDULER_URL")
+SLICE_ITERS = int(os.getenv("SLICE_ITERS", "20"))
+TOTAL_ITERS = int(os.getenv("TOTAL_ITERS", "200"))
+WARMUP_ITERS = int(os.getenv("WARMUP_ITERS", "5"))
+BATCH_SIZE = int(os.getenv("BATCH_SIZE", "4"))
+CLIENT_ID = os.getenv("CLIENT_ID", "unknown")
+PRIORITY = int(os.getenv("PRIORITY", "0"))
+RUN_ID = os.getenv("RUN_ID", "run_unknown")
+GPU_MEM_LIMIT_MB = int(os.getenv("GPU_MEM_LIMIT_MB", "3000"))
 
-def env_int(name: str, default: int) -> int:
-    try:
-        return int(os.getenv(name, str(default)))
-    except Exception:
-        return default
+# MUST match collector
+RESULTS_DIR = "/mnt/checkpoints/experiments"
 
-def env_float(name: str, default: float) -> float:
-    try:
-        return float(os.getenv(name, str(default)))
-    except Exception:
-        return default
+# ------------------------
+# Paths
+# ------------------------
+BASE_DIR = os.path.join(RESULTS_DIR, RUN_ID, "jobs", CLIENT_ID)
+os.makedirs(BASE_DIR, exist_ok=True)
 
-SCHEDULER_URL = os.getenv("SCHEDULER_URL", "http://gpu-scheduler.default.svc.cluster.local:8080")
-CLIENT_ID = os.getenv("CLIENT_ID", socket.gethostname())
-PRIORITY = env_int("PRIORITY", 10)
+LOG_FILE = os.path.join(BASE_DIR, "job.log")
+SLICE_CSV = os.path.join(BASE_DIR, "slice_timeline.csv")
+METRICS_JSON = os.path.join(BASE_DIR, "metrics.json")
 
-SLICE_ITERS = env_int("SLICE_ITERS", 20)
-TOTAL_ITERS = env_int("TOTAL_ITERS", 200)
-WARMUP_ITERS = env_int("WARMUP_ITERS", 10)
+# ------------------------
+# Logging
+# ------------------------
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s",
+    handlers=[logging.FileHandler(LOG_FILE), logging.StreamHandler()],
+)
 
-BATCH_SIZE = env_int("BATCH_SIZE", 4)
-
-RESULTS_DIR = os.getenv("RESULTS_DIR", "/mnt/checkpoints")
-RUN_ID = os.getenv("RUN_ID", "resnet50_real")
-
-# Cooperative memory settings
-GPU_MEM_LIMIT_MB = env_int("GPU_MEM_LIMIT_MB", 3000)   # per-pod cap; tune if needed
-ALLOW_GROWTH = os.getenv("TF_FORCE_GPU_ALLOW_GROWTH", "true").lower() in ("1", "true", "yes")
-
-POLL_INTERVAL_SEC = env_float("POLL_INTERVAL_SEC", 0.5)
-REQUEST_TIMEOUT_SEC = env_float("REQUEST_TIMEOUT_SEC", 2.0)
-
-os.makedirs(RESULTS_DIR, exist_ok=True)
-
-def scheduler_request():
+def log(event, **kwargs):
     payload = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "event": event,
         "client_id": CLIENT_ID,
-        "priority": PRIORITY,
-        "ts": now_iso(),
+        **kwargs,
     }
-    try:
-        r = requests.post(f"{SCHEDULER_URL}/request", json=payload, timeout=REQUEST_TIMEOUT_SEC)
-        r.raise_for_status()
-        return r.json()
-    except Exception as e:
-        return {"granted": False, "error": str(e)}
+    logging.info(json.dumps(payload))
 
-def scheduler_release():
-    payload = {
-        "client_id": CLIENT_ID,
-        "ts": now_iso(),
-    }
-    try:
-        r = requests.post(f"{SCHEDULER_URL}/release", json=payload, timeout=REQUEST_TIMEOUT_SEC)
-        r.raise_for_status()
-        return True
-    except Exception:
-        return False
-
-def init_tf_and_model():
-    """
-    Initialize TensorFlow + model only when we are granted a slice.
-    This avoids GPU memory allocation during the 'waiting for grant' phase.
-    """
-    # Set env hints BEFORE importing TF
-    if ALLOW_GROWTH:
-        os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
-    # Optional allocator that can reduce fragmentation in some setups
-    os.environ.setdefault("TF_GPU_ALLOCATOR", "cuda_malloc_async")
-
-    import tensorflow as tf
-    from tensorflow.keras.applications import ResNet50
-
-    gpus = tf.config.list_physical_devices("GPU")
-    if not gpus:
-        raise RuntimeError("No GPU detected by TensorFlow inside the container.")
-
-    # Configure GPU memory behavior BEFORE any GPU ops
-    for gpu in gpus:
-        try:
-            if ALLOW_GROWTH:
-                tf.config.experimental.set_memory_growth(gpu, True)
-        except Exception:
-            pass
-
-    # Hard cap per process (recommended for multi-tenant)
-    # NOTE: This must happen before logical devices are created.
+# ------------------------
+# TensorFlow GPU setup
+# ------------------------
+gpus = tf.config.list_physical_devices("GPU")
+if gpus:
     try:
         tf.config.set_logical_device_configuration(
             gpus[0],
             [tf.config.LogicalDeviceConfiguration(memory_limit=GPU_MEM_LIMIT_MB)]
         )
-    except Exception:
-        # If it fails (e.g., logical devices already initialized), we continue with growth-only.
+    except RuntimeError:
         pass
 
-    # Build model (weights=None to avoid download; still "real inference" compute)
-    model = ResNet50(weights=None)
-    return tf, model
+def gpu_memory_mb():
+    info = tf.config.experimental.get_memory_info("GPU:0")
+    return info["current"] / 1024**2, info["peak"] / 1024**2
 
-def run_inference_iters(tf, model, iters: int, batch_size: int):
-    """
-    Run iters forward passes. Generate inputs on CPU; TF will place ops on GPU.
-    """
-    # Generate random images; shape: (B, 224, 224, 3)
-    # Use tf.random on CPU to reduce GPU-side random allocation issues.
-    with tf.device("/CPU:0"):
-        x = tf.random.uniform([batch_size, 224, 224, 3], dtype=tf.float32)
+# ------------------------
+# Model
+# ------------------------
+model = tf.keras.applications.ResNet50(
+    weights=None,
+    input_shape=(224, 224, 3),
+    classes=1000,
+)
 
-    # Warm-up single call (graph building / kernel selection)
-    _ = model(x, training=False)
+# ------------------------
+# Scheduler API
+# ------------------------
+def request_gpu():
+    requests.post(
+        f"{SCHEDULER_URL}/request",
+        json={"client_id": CLIENT_ID, "priority": PRIORITY},
+        timeout=5,
+    )
+
+def release_gpu():
+    requests.post(
+        f"{SCHEDULER_URL}/release",
+        json={"client_id": CLIENT_ID},
+        timeout=5,
+    )
+
+# ------------------------
+# CSV header
+# ------------------------
+with open(SLICE_CSV, "w", newline="") as f:
+    csv.writer(f).writerow([
+        "slice_id", "start_iter", "end_iter",
+        "slice_time_ms", "gpu_mem_current_mb", "gpu_mem_peak_mb"
+    ])
+
+# ------------------------
+# Execution
+# ------------------------
+log(
+    "job_start",
+    total_iters=TOTAL_ITERS,
+    slice_iters=SLICE_ITERS,
+    batch_size=BATCH_SIZE,
+    gpu_mem_limit_mb=GPU_MEM_LIMIT_MB,
+)
+
+iteration = 0
+slice_id = 0
+slice_times = []
+job_start_time = time.time()
+
+while iteration < TOTAL_ITERS:
+    slice_id += 1
+    start_iter = iteration
+
+    log("slice_request", slice_id=slice_id)
+    request_gpu()
 
     t0 = time.time()
-    for _i in range(iters):
-        _ = model(x, training=False)
-    # Force completion
-    tf.experimental.async_clear_error() if hasattr(tf.experimental, "async_clear_error") else None
-    tf.keras.backend.clear_session()
-    t1 = time.time()
-    return t1 - t0
 
-def append_jsonl(path, obj):
-    with open(path, "a") as f:
-        f.write(json.dumps(obj) + "\n")
-
-def main():
-    progress = 0
-    slice_index = 0
-
-    log_path = os.path.join(RESULTS_DIR, f"{RUN_ID}_{CLIENT_ID}.jsonl")
-    append_jsonl(log_path, {"ts": now_iso(), "event": "start", "client_id": CLIENT_ID})
-
-    while progress < TOTAL_ITERS:
-        # Wait for grant
-        grant = scheduler_request()
-        if not grant.get("granted", False):
-            time.sleep(POLL_INTERVAL_SEC)
+    while iteration < TOTAL_ITERS and iteration < start_iter + SLICE_ITERS:
+        if iteration < WARMUP_ITERS:
+            iteration += 1
             continue
 
-        # Granted: do one slice
-        remaining = TOTAL_ITERS - progress
-        this_slice = min(SLICE_ITERS, remaining)
+        x = np.random.rand(BATCH_SIZE, 224, 224, 3).astype(np.float32)
+        model(x, training=False)
+        iteration += 1
 
-        append_jsonl(log_path, {
-            "ts": now_iso(),
-            "event": "slice_granted",
-            "slice_index": slice_index,
-            "progress": progress,
-            "slice_iters": this_slice,
-            "grant_info": grant,
-        })
+    t1 = time.time()
+    release_gpu()
 
-        # IMPORTANT: Only now initialize TF and model
-        try:
-            tf, model = init_tf_and_model()
-        except Exception as e:
-            append_jsonl(log_path, {"ts": now_iso(), "event": "tf_init_error", "error": str(e)})
-            scheduler_release()
-            raise
+    slice_ms = (t1 - t0) * 1000
+    mem_cur, mem_peak = gpu_memory_mb()
+    slice_times.append(slice_ms)
 
-        # Warm-up for first slice (optional)
-        warmup = WARMUP_ITERS if progress == 0 else 0
-        if warmup > 0:
-            try:
-                _ = run_inference_iters(tf, model, warmup, BATCH_SIZE)
-            except Exception as e:
-                append_jsonl(log_path, {"ts": now_iso(), "event": "warmup_error", "error": str(e)})
-                scheduler_release()
-                raise
+    log(
+        "slice_complete",
+        slice_id=slice_id,
+        start_iter=start_iter,
+        end_iter=iteration,
+        slice_time_ms=slice_ms,
+        gpu_mem_current_mb=mem_cur,
+        gpu_mem_peak_mb=mem_peak,
+    )
 
-        # Actual slice execution
-        try:
-            dt = run_inference_iters(tf, model, this_slice, BATCH_SIZE)
-        except Exception as e:
-            append_jsonl(log_path, {"ts": now_iso(), "event": "slice_error", "error": str(e)})
-            scheduler_release()
-            raise
+    with open(SLICE_CSV, "a", newline="") as f:
+        csv.writer(f).writerow([
+            slice_id, start_iter, iteration,
+            round(slice_ms, 2),
+            round(mem_cur, 2),
+            round(mem_peak, 2),
+        ])
 
-        progress += this_slice
+# ------------------------
+# Final metrics
+# ------------------------
+metrics = {
+    "client_id": CLIENT_ID,
+    "total_iters": TOTAL_ITERS,
+    "slice_iters": SLICE_ITERS,
+    "num_slices": slice_id,
+    "avg_slice_time_ms": sum(slice_times) / len(slice_times),
+    "total_runtime_sec": time.time() - job_start_time,
+    "gpu_mem_limit_mb": GPU_MEM_LIMIT_MB,
+}
 
-        released = scheduler_release()
-        append_jsonl(log_path, {
-            "ts": now_iso(),
-            "event": "slice_done",
-            "slice_index": slice_index,
-            "slice_iters": this_slice,
-            "progress": progress,
-            "slice_seconds": dt,
-            "iters_per_sec": (this_slice / dt) if dt > 0 else None,
-            "release_ok": released,
-        })
+with open(METRICS_JSON, "w") as f:
+    json.dump(metrics, f, indent=2)
 
-        slice_index += 1
-
-    append_jsonl(log_path, {"ts": now_iso(), "event": "completed", "final_progress": progress})
-    print(f"[{CLIENT_ID}] Completed. progress={progress}/{TOTAL_ITERS}. Results: {log_path}")
-
-if __name__ == "__main__":
-    main()
+log("job_complete", **metrics)

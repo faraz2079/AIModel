@@ -1,0 +1,8 @@
+# Ignore large Docker image archives
+resnetModel/resnet50-coop-v9.tar
+
+# Ignore experiment results (generated data)
+resnetModel/results/
+
+# Optional: ignore any future coop tar versions
+resnetModel/resnet50-coop-v*.tar

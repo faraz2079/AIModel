@@ -21,7 +21,7 @@ spec:
 
       containers:
         - name: resnet50-coop
-          image: resnet50-coop:v5
+          image: resnet50-coop:v9
           imagePullPolicy: Never
 
           env:
@@ -40,11 +40,9 @@ spec:
             - name: BATCH_SIZE
               value: "4"
 
-            # Cooperative memory behavior
             - name: TF_FORCE_GPU_ALLOW_GROWTH
               value: "true"
 
-            # Hard per-pod cap; tune as needed (e.g., 2500–3500)
             - name: GPU_MEM_LIMIT_MB
               value: "3000"
 
@@ -57,10 +55,10 @@ spec:
               value: "10"
 
             - name: RESULTS_DIR
-              value: "/mnt/checkpoints"
+              value: "/mnt/checkpoints/experiments"
 
             - name: RUN_ID
-              value: "resnet50_real"
+              value: "__RUN_ID__"   # ← patched by script
 
           volumeMounts:
             - name: checkpoints
