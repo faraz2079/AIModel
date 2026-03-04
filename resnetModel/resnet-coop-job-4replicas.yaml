@@ -21,12 +21,12 @@ spec:
 
       containers:
         - name: resnet50-coop
-          image: resnet50-coop:v9
+          image: resnet50-coop:v10
           imagePullPolicy: Never
 
           env:
             - name: SCHEDULER_URL
-              value: "http://gpu-scheduler.default.svc.cluster.local:8080"
+              value: "http://gpu-scheduler:8080"
 
             - name: SLICE_ITERS
               value: "20"

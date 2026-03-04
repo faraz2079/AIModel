@@ -26,6 +26,11 @@ GPU_MEM_LIMIT_MB = int(os.getenv("GPU_MEM_LIMIT_MB", "3000"))
 RESULTS_DIR = "/mnt/checkpoints/experiments"
 
 # ------------------------
+# Submit time (metric #3)
+# ------------------------
+SUBMIT_TIME = time.time()
+
+# ------------------------
 # Paths
 # ------------------------
 BASE_DIR = os.path.join(RESULTS_DIR, RUN_ID, "jobs", CLIENT_ID)
@@ -36,7 +41,7 @@ SLICE_CSV = os.path.join(BASE_DIR, "slice_timeline.csv")
 METRICS_JSON = os.path.join(BASE_DIR, "metrics.json")
 
 # ------------------------
-# Logging
+# Logging (JSON lines)
 # ------------------------
 logging.basicConfig(
     level=logging.INFO,
@@ -71,7 +76,7 @@ def gpu_memory_mb():
     return info["current"] / 1024**2, info["peak"] / 1024**2
 
 # ------------------------
-# Model
+# Model (workload)
 # ------------------------
 model = tf.keras.applications.ResNet50(
     weights=None,
@@ -97,12 +102,16 @@ def release_gpu():
     )
 
 # ------------------------
-# CSV header
+# CSV header (per-slice metrics)
 # ------------------------
 with open(SLICE_CSV, "w", newline="") as f:
     csv.writer(f).writerow([
-        "slice_id", "start_iter", "end_iter",
-        "slice_time_ms", "gpu_mem_current_mb", "gpu_mem_peak_mb"
+        "slice_id",
+        "start_iter",
+        "end_iter",
+        "slice_time_ms",
+        "gpu_mem_current_mb",
+        "gpu_mem_peak_mb"
     ])
 
 # ------------------------
@@ -119,6 +128,12 @@ log(
 iteration = 0
 slice_id = 0
 slice_times = []
+
+# ---- Timing accumulators ----
+first_gpu_grant_time = None      # metric #10
+total_wait_time = 0.0            # metric #7 / #10
+total_compute_time = 0.0         # metric #9
+
 job_start_time = time.time()
 
 while iteration < TOTAL_ITERS:
@@ -126,9 +141,16 @@ while iteration < TOTAL_ITERS:
     start_iter = iteration
 
     log("slice_request", slice_id=slice_id)
+
+    request_start = time.time()
     request_gpu()
 
-    t0 = time.time()
+    if first_gpu_grant_time is None:
+        first_gpu_grant_time = time.time()
+
+    total_wait_time += time.time() - request_start
+
+    slice_start = time.time()
 
     while iteration < TOTAL_ITERS and iteration < start_iter + SLICE_ITERS:
         if iteration < WARMUP_ITERS:
@@ -136,44 +158,73 @@ while iteration < TOTAL_ITERS:
             continue
 
         x = np.random.rand(BATCH_SIZE, 224, 224, 3).astype(np.float32)
+
+        compute_start = time.time()
         model(x, training=False)
+        compute_end = time.time()
+
+        total_compute_time += compute_end - compute_start
         iteration += 1
 
-    t1 = time.time()
+    slice_end = time.time()
     release_gpu()
 
-    slice_ms = (t1 - t0) * 1000
+    slice_time_ms = (slice_end - slice_start) * 1000
     mem_cur, mem_peak = gpu_memory_mb()
-    slice_times.append(slice_ms)
+    slice_times.append(slice_time_ms)
 
     log(
         "slice_complete",
         slice_id=slice_id,
         start_iter=start_iter,
         end_iter=iteration,
-        slice_time_ms=slice_ms,
+        slice_time_ms=slice_time_ms,
         gpu_mem_current_mb=mem_cur,
         gpu_mem_peak_mb=mem_peak,
     )
 
     with open(SLICE_CSV, "a", newline="") as f:
         csv.writer(f).writerow([
-            slice_id, start_iter, iteration,
-            round(slice_ms, 2),
+            slice_id,
+            start_iter,
+            iteration,
+            round(slice_time_ms, 2),
             round(mem_cur, 2),
             round(mem_peak, 2),
         ])
 
 # ------------------------
-# Final metrics
+# Completion + Final metrics
 # ------------------------
+COMPLETION_TIME = time.time()
+
 metrics = {
+    # Identification (1,2)
     "client_id": CLIENT_ID,
-    "total_iters": TOTAL_ITERS,
+    "job_id": CLIENT_ID,
+
+    # Timing (3,4,10,11)
+    "submit_time": SUBMIT_TIME,
+    "first_gpu_grant_time": first_gpu_grant_time,
+    "completion_time": COMPLETION_TIME,
+    "total_job_time_sec": COMPLETION_TIME - SUBMIT_TIME,
+
+    # Slice info (4,5,6)
     "slice_iters": SLICE_ITERS,
     "num_slices": slice_id,
-    "avg_slice_time_ms": sum(slice_times) / len(slice_times),
-    "total_runtime_sec": time.time() - job_start_time,
+
+    # Compute vs overhead (7,8,9)
+    "total_compute_time_sec": total_compute_time,
+    "total_wait_time_sec": total_wait_time,
+    "total_overhead_sec": (COMPLETION_TIME - SUBMIT_TIME) - total_compute_time,
+
+    # Workload description (12)
+    "workload_description": (
+        "ResNet50 forward-pass inference workload executed cooperatively "
+        "using time-sliced GPU scheduling"
+    ),
+
+    # GPU config
     "gpu_mem_limit_mb": GPU_MEM_LIMIT_MB,
 }
 
