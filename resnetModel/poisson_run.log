@@ -1,0 +1,145 @@
+nohup: ignoring input
+======================================
+Starting Poisson experiment
+RUN_ID: run_20260304_160804
+Lambda: 0.01
+Jobs:   40
+======================================
+Cleaning previous jobs...
+No resources found
+Launching jobs with Poisson arrivals...
+Launching job 0001
+job.batch/resnet50-poisson-0001 created
+Next job in 201.4894836645134s
+Launching job 0002
+job.batch/resnet50-poisson-0002 created
+Next job in 2.031856307999875s
+Launching job 0003
+job.batch/resnet50-poisson-0003 created
+Next job in 89.87715823150054s
+Launching job 0004
+job.batch/resnet50-poisson-0004 created
+Next job in 20.877033059305866s
+Launching job 0005
+job.batch/resnet50-poisson-0005 created
+Next job in 616.8842147374866s
+Launching job 0006
+job.batch/resnet50-poisson-0006 created
+Next job in 174.24302786974445s
+Launching job 0007
+job.batch/resnet50-poisson-0007 created
+Next job in 185.1113586006783s
+Launching job 0008
+job.batch/resnet50-poisson-0008 created
+Next job in 3.366012191285587s
+Launching job 0009
+job.batch/resnet50-poisson-0009 created
+Next job in 5.643585382355261s
+Launching job 0010
+job.batch/resnet50-poisson-0010 created
+Next job in 18.227050770604183s
+Launching job 0011
+job.batch/resnet50-poisson-0011 created
+Next job in 76.04905442732301s
+Launching job 0012
+job.batch/resnet50-poisson-0012 created
+Next job in 75.11226488917183s
+Launching job 0013
+job.batch/resnet50-poisson-0013 created
+Next job in 84.67940328615474s
+Launching job 0014
+job.batch/resnet50-poisson-0014 created
+Next job in 70.0651683157973s
+Launching job 0015
+job.batch/resnet50-poisson-0015 created
+Next job in 35.82283018160444s
+Launching job 0016
+job.batch/resnet50-poisson-0016 created
+Next job in 36.060554751735374s
+Launching job 0017
+job.batch/resnet50-poisson-0017 created
+Next job in 38.40141833511572s
+Launching job 0018
+job.batch/resnet50-poisson-0018 created
+Next job in 16.090632720482684s
+Launching job 0019
+job.batch/resnet50-poisson-0019 created
+Next job in 23.51921125825534s
+Launching job 0020
+job.batch/resnet50-poisson-0020 created
+Next job in 26.007674802315787s
+Launching job 0021
+job.batch/resnet50-poisson-0021 created
+Next job in 18.976083090229352s
+Launching job 0022
+job.batch/resnet50-poisson-0022 created
+Next job in 184.45469519088354s
+Launching job 0023
+job.batch/resnet50-poisson-0023 created
+Next job in 46.949204693252696s
+Launching job 0024
+job.batch/resnet50-poisson-0024 created
+Next job in 124.46885487286552s
+Launching job 0025
+job.batch/resnet50-poisson-0025 created
+Next job in 166.61227067065278s
+Launching job 0026
+job.batch/resnet50-poisson-0026 created
+Next job in 99.07973695926601s
+Launching job 0027
+job.batch/resnet50-poisson-0027 created
+Next job in 77.18421061257801s
+Launching job 0028
+job.batch/resnet50-poisson-0028 created
+Next job in 52.57504538128849s
+Launching job 0029
+job.batch/resnet50-poisson-0029 created
+Next job in 18.746421889834284s
+Launching job 0030
+job.batch/resnet50-poisson-0030 created
+Next job in 46.3713304981974s
+Launching job 0031
+job.batch/resnet50-poisson-0031 created
+Next job in 201.99283822446108s
+Launching job 0032
+job.batch/resnet50-poisson-0032 created
+Next job in 332.8265312983523s
+Launching job 0033
+job.batch/resnet50-poisson-0033 created
+Next job in 78.77721117068467s
+Launching job 0034
+job.batch/resnet50-poisson-0034 created
+Next job in 177.53097746561548s
+Launching job 0035
+job.batch/resnet50-poisson-0035 created
+Next job in 66.40165441183736s
+Launching job 0036
+job.batch/resnet50-poisson-0036 created
+Next job in 67.32444739883964s
+Launching job 0037
+job.batch/resnet50-poisson-0037 created
+Next job in 94.22299296322358s
+Launching job 0038
+job.batch/resnet50-poisson-0038 created
+Next job in 94.73360011919317s
+Launching job 0039
+job.batch/resnet50-poisson-0039 created
+Next job in 77.86424522872395s
+Launching job 0040
+job.batch/resnet50-poisson-0040 created
+Next job in 63.2304433216449s
+All jobs submitted.
+Waiting for jobs to complete...
+All jobs completed.
+Creating collector pod...
+pod/results-collector created
+pod/results-collector condition met
+Copying experiment data...
+tar: removing leading '/' from member names
+Saving scheduler logs...
+pod "results-collector" deleted
+======================================
+Experiment finished
+Results stored in:
+/home/faraz/project/AIModel/resnetModel/results/run_20260304_160804
+======================================

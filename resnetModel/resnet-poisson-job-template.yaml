@@ -1,0 +1,58 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: resnet50-poisson-__JOB_ID__
+  namespace: odm-gpu
+  labels:
+    app: resnet50-poisson
+    run_id: "__RUN_ID__"
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        app: resnet50-poisson
+        run_id: "__RUN_ID__"
+    spec:
+      restartPolicy: Never
+      nodeSelector:
+        nvidia.com/gpu.present: "true"
+      containers:
+        - name: resnet50-coop
+          image: resnet50-coop:v10
+          imagePullPolicy: Never
+          env:
+            - name: SCHEDULER_URL
+              value: "http://gpu-scheduler:8080"
+            - name: SLICE_ITERS
+              value: "__SLICE_ITERS__"
+            - name: TOTAL_ITERS
+              value: "__TOTAL_ITERS__"
+            - name: WARMUP_ITERS
+              value: "__WARMUP_ITERS__"
+            - name: BATCH_SIZE
+              value: "__BATCH_SIZE__"
+            - name: TF_FORCE_GPU_ALLOW_GROWTH
+              value: "true"
+            - name: GPU_MEM_LIMIT_MB
+              value: "__GPU_MEM_LIMIT_MB__"
+            - name: CLIENT_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: PRIORITY
+              value: "10"
+            - name: RESULTS_DIR
+              value: "/mnt/checkpoints/experiments"
+            - name: RUN_ID
+              value: "__RUN_ID__"
+          volumeMounts:
+            - name: checkpoints
+              mountPath: /mnt/checkpoints
+      volumes:
+        - name: checkpoints
+          persistentVolumeClaim:
+            claimName: odm-checkpoints
